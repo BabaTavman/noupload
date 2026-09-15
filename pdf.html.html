@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF Aracı — birleştir, sayfa seç, döndür</title>
+
+<!-- pdf-lib: PDF'i oluşturup değiştiren kütüphane -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<!-- pdf.js: sayfaları küçük resim olarak çizmek için -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+  :root{
+    --ground:#EEF1F3; --surface:#FFFFFF; --surface-2:#F5F8FA;
+    --ink:#15212B; --ink-2:#48606F; --ink-3:#7B93A2;
+    --rule:#D3DDE3; --accent:#17607F; --accent-ink:#FFFFFF;
+    --good:#2A6B4F; --warn:#8C5A10;
+    --radius:10px;
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#101A21; --surface:#18242D; --surface-2:#1E2C36;
+      --ink:#E6EDF2; --ink-2:#AEC1CC; --ink-3:#7C929F;
+      --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
+      --good:#67B089; --warn:#D9A458;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--ground);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;padding:24px 16px 64px}
+  .wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+  header h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.02em}
+  header p{margin:0;color:var(--ink-2);font-size:.95rem}
+  .topline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .privacy{margin-top:10px;font-size:.85rem;color:var(--good);display:flex;gap:7px;align-items:baseline}
+
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:18px}
+
+  /* sekmeler */
+  .tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:5px}
+  .tab{flex:1;padding:10px 12px;border-radius:7px;border:none;background:transparent;color:var(--ink-2);font:inherit;font-weight:600;font-size:.93rem;cursor:pointer}
+  .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+
+  /* bırakma alanı */
+  .drop{border:2px dashed var(--rule);border-radius:var(--radius);padding:30px 18px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color .15s}
+  .drop.over{border-color:var(--accent)}
+  .drop strong{display:block;font-size:1.02rem;margin-bottom:4px}
+  .drop span{color:var(--ink-3);font-size:.9rem}
+  input[type=file]{display:none}
+
+  /* dosya listesi (birleştirme) */
+  ul.files{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  ul.files li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+  ul.files .idx{font-family:var(--mono);font-size:.82rem;color:var(--ink-3)}
+  ul.files .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.93rem}
+  ul.files .meta{font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
+  .mini{display:flex;gap:4px}
+  .mini button{padding:5px 9px;font-size:.85rem;background:transparent;color:var(--ink-2);border:1px solid var(--rule);border-radius:6px}
+
+  /* sayfa ızgarası */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+  .pg{position:relative;border:2px solid var(--rule);border-radius:8px;padding:6px;background:var(--surface-2);cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .pg.sel{border-color:var(--accent);background:color-mix(in srgb, var(--accent) 10%, var(--surface-2))}
+  .pg canvas{width:100%;height:auto;border-radius:4px;background:#fff;display:block}
+  .pg .no{font-family:var(--mono);font-size:.74rem;color:var(--ink-3)}
+  .pg.sel .no{color:var(--accent);font-weight:600}
+
+  button{font:inherit;font-weight:600;font-size:.93rem;padding:10px 16px;border-radius:8px;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.ghost{background:transparent;color:var(--ink-2);border-color:var(--rule)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+  .count{font-family:var(--mono);font-size:.82rem;color:var(--ink-3)}
+  .msg{font-size:.9rem;padding:10px 12px;border-radius:7px;background:var(--ground);color:var(--ink-2);margin-top:12px}
+  .msg.ok{color:var(--good)}
+  .msg.err{color:var(--warn)}
+  .langbtn{padding:6px 11px;font-size:.8rem;background:transparent;color:var(--ink-2);border:1px solid var(--rule);border-radius:6px}
+  button:focus-visible,.drop:focus-visible,.pg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  [hidden]{display:none !important}
+  footer{color:var(--ink-3);font-size:.82rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="topline">
+      <div>
+        <h1 data-t="title">PDF Aracı</h1>
+        <p data-t="sub">PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.</p>
+      </div>
+      <button class="langbtn" id="lang">English</button>
+    </div>
+    <p class="privacy"><span>●</span> <span data-t="privacy">Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.</span></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tabMerge" role="tab" aria-selected="true" data-t="tabMerge">Birleştir</button>
+    <button class="tab" id="tabPages" role="tab" aria-selected="false" data-t="tabPages">Sayfa seç</button>
+  </div>
+
+  <!-- ======================= BİRLEŞTİRME ======================= -->
+  <section id="paneMerge">
+    <div class="drop" id="dropM" tabindex="0" role="button">
+      <strong data-t="dropM1">PDF dosyalarını buraya sürükle</strong>
+      <span data-t="dropM2">ya da tıklayıp seç · birden fazla seçebilirsin</span>
+      <input type="file" id="fileM" accept="application/pdf" multiple>
+    </div>
+
+    <div class="card" id="cardM" hidden style="margin-top:16px">
+      <ul class="files" id="listM"></ul>
+      <div class="actions" style="margin-top:14px">
+        <button id="mergeGo" data-t="mergeGo">Birleştir ve indir</button>
+        <button class="ghost" id="mergeAdd" data-t="add">Dosya ekle</button>
+        <button class="ghost" id="mergeClear" data-t="clear">Temizle</button>
+        <span class="spacer"></span>
+        <span class="count" id="countM"></span>
+      </div>
+      <p class="msg" id="msgM" hidden></p>
+    </div>
+  </section>
+
+  <!-- ======================= SAYFA SEÇME ======================= -->
+  <section id="panePages" hidden>
+    <div class="drop" id="dropP" tabindex="0" role="button">
+      <strong data-t="dropP1">Tek bir PDF sürükle</strong>
+      <span data-t="dropP2">sayfaları göreceksin, tutmak istediklerini seç</span>
+      <input type="file" id="fileP" accept="application/pdf">
+    </div>
+
+    <div class="card" id="cardP" hidden style="margin-top:16px">
+      <div class="actions" style="margin-bottom:14px">
+        <button class="ghost" id="selAll" data-t="selAll">Tümünü seç</button>
+        <button class="ghost" id="selNone" data-t="selNone">Seçimi bırak</button>
+        <button class="ghost" id="selInv" data-t="selInv">Tersini seç</button>
+        <button class="ghost" id="rot" data-t="rot">Seçilenleri döndür 90°</button>
+        <span class="spacer"></span>
+        <span class="count" id="countP"></span>
+      </div>
+      <div class="grid" id="gridP"></div>
+      <div class="actions" style="margin-top:16px">
+        <button id="pagesGo" data-t="pagesGo">Seçilenlerden PDF oluştur</button>
+        <button class="ghost" id="pagesClear" data-t="clear">Temizle</button>
+      </div>
+      <p class="msg" id="msgP" hidden></p>
+    </div>
+  </section>
+
+  <footer data-t="foot">Tek sayfa · sunucu yok · veri toplanmıyor</footer>
+</div>
+
+<script>
+/* ==================================================================
+   0) DİL
+   Tüm metinler burada. Yeni dil eklemek = bu nesneye bir anahtar
+   eklemek. Metinleri koda gömmek yerine burada tutmanın sebebi bu.
+================================================================== */
+const STR = {
+  tr:{
+    title:"PDF Aracı",
+    sub:"PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.",
+    privacy:"Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.",
+    tabMerge:"Birleştir", tabPages:"Sayfa seç",
+    dropM1:"PDF dosyalarını buraya sürükle", dropM2:"ya da tıklayıp seç · birden fazla seçebilirsin",
+    dropP1:"Tek bir PDF sürükle", dropP2:"sayfaları göreceksin, tutmak istediklerini seç",
+    mergeGo:"Birleştir ve indir", add:"Dosya ekle", clear:"Temizle",
+    selAll:"Tümünü seç", selNone:"Seçimi bırak", selInv:"Tersini seç",
+    rot:"Seçilenleri döndür 90°", pagesGo:"Seçilenlerden PDF oluştur",
+    foot:"Tek sayfa · sunucu yok · veri toplanmıyor",
+    lang:"English",
+    nFiles:n=>`${n} dosya · ${n>1?"sıra yukarıdaki gibi":"tek dosya"}`,
+    nPages:(s,t)=>`${t} sayfadan ${s} tanesi seçili`,
+    merged:n=>`${n} dosya birleştirildi ve indirildi.`,
+    made:n=>`${n} sayfalık yeni PDF indirildi.`,
+    pickOne:"En az bir sayfa seç.",
+    needTwo:"Birleştirmek için en az iki dosya gerekiyor.",
+    bad:"Bu dosya okunamadı. Şifreli ya da bozuk olabilir.",
+    working:"İşleniyor…"
+  },
+  en:{
+    title:"PDF Tool",
+    sub:"Merge PDFs, pick the pages you want as a new file, rotate pages.",
+    privacy:"Your file is never uploaded — everything runs in your browser.",
+    tabMerge:"Merge", tabPages:"Select pages",
+    dropM1:"Drop PDF files here", dropM2:"or click to choose · you can pick several",
+    dropP1:"Drop a single PDF", dropP2:"you'll see the pages — select the ones to keep",
+    mergeGo:"Merge and download", add:"Add files", clear:"Clear",
+    selAll:"Select all", selNone:"Clear selection", selInv:"Invert selection",
+    rot:"Rotate selected 90°", pagesGo:"Build PDF from selection",
+    foot:"Single page · no server · no data collected",
+    lang:"Türkçe",
+    nFiles:n=>`${n} file${n>1?"s":""} · order as listed above`,
+    nPages:(s,t)=>`${s} of ${t} pages selected`,
+    merged:n=>`Merged ${n} files and downloaded.`,
+    made:n=>`Downloaded a new ${n}-page PDF.`,
+    pickOne:"Select at least one page.",
+    needTwo:"You need at least two files to merge.",
+    bad:"Couldn't read this file. It may be encrypted or damaged.",
+    working:"Working…"
+  }
+};
+let lang = "tr";
+const T = () => STR[lang];
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(n => {
+    const v = T()[n.dataset.t];
+    if (typeof v === "string") n.textContent = v;
+  });
+  el("lang").textContent = T().lang;
+  renderMergeList();
+  updatePageCount();
+}
+const el = id => document.getElementById(id);
+el("lang").addEventListener("click", () => { lang = lang === "tr" ? "en" : "tr"; applyLang(); });
+
+/* ==================================================================
+   1) ORTAK YARDIMCILAR
+================================================================== */
+const { PDFDocument, degrees } = PDFLib;
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+function say(node, text, kind){
+  node.textContent = text;
+  node.className = "msg" + (kind ? " " + kind : "");
+  node.hidden = false;
+}
+
+// Blob'u indir. Tarayıcıda geçici bir bağlantı oluşturup tıklıyoruz.
+function download(bytes, name){
+  const blob = new Blob([bytes], { type:"application/pdf" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Sürükle-bırak davranışını tek yerde kur
+function wireDrop(dropEl, inputEl, onFiles){
+  dropEl.addEventListener("click", () => inputEl.click());
+  dropEl.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputEl.click(); }
+  });
+  inputEl.addEventListener("change", () => onFiles([...inputEl.files]));
+  ["dragenter","dragover"].forEach(ev =>
+    dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev =>
+    dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.remove("over"); }));
+  dropEl.addEventListener("drop", e =>
+    onFiles([...e.dataTransfer.files].filter(f => f.type === "application/pdf")));
+}
+
+/* ==================================================================
+   2) SEKMELER
+================================================================== */
+function showTab(which){
+  const merge = which === "merge";
+  el("tabMerge").setAttribute("aria-selected", merge);
+  el("tabPages").setAttribute("aria-selected", !merge);
+  el("paneMerge").hidden = !merge;
+  el("panePages").hidden = merge;
+}
+el("tabMerge").addEventListener("click", () => showTab("merge"));
+el("tabPages").addEventListener("click", () => showTab("pages"));
+
+/* ==================================================================
+   3) BİRLEŞTİRME
+   mergeFiles: kullanıcının seçtiği dosyalar, sırası önemli.
+================================================================== */
+let mergeFiles = [];
+
+function renderMergeList(){
+  const list = el("listM");
+  list.innerHTML = "";
+  mergeFiles.forEach((f, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="idx">${String(i+1).padStart(2,"0")}</span>
+      <span class="nm">${f.name}<br><span class="meta">${(f.size/1024).toFixed(0)} KB</span></span>
+      <span class="mini">
+        <button data-up="${i}" ${i===0?"disabled":""} aria-label="yukarı">↑</button>
+        <button data-down="${i}" ${i===mergeFiles.length-1?"disabled":""} aria-label="aşağı">↓</button>
+        <button data-del="${i}" aria-label="sil">✕</button>
+      </span>`;
+    list.appendChild(li);
+  });
+  el("countM").textContent = mergeFiles.length ? T().nFiles(mergeFiles.length) : "";
+  el("cardM").hidden = mergeFiles.length === 0;
+}
+
+el("listM").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const swap = (a, c) => { [mergeFiles[a], mergeFiles[c]] = [mergeFiles[c], mergeFiles[a]]; };
+  if (b.dataset.up   !== undefined) swap(+b.dataset.up, +b.dataset.up - 1);
+  if (b.dataset.down !== undefined) swap(+b.dataset.down, +b.dataset.down + 1);
+  if (b.dataset.del  !== undefined) mergeFiles.splice(+b.dataset.del, 1);
+  renderMergeList();
+});
+
+wireDrop(el("dropM"), el("fileM"), files => {
+  mergeFiles = mergeFiles.concat(files);
+  el("msgM").hidden = true;
+  renderMergeList();
+});
+el("mergeAdd").addEventListener("click", () => el("fileM").click());
+el("mergeClear").addEventListener("click", () => {
+  mergeFiles = []; el("fileM").value = ""; el("msgM").hidden = true; renderMergeList();
+});
+
+el("mergeGo").addEventListener("click", async () => {
+  if (mergeFiles.length < 2) return say(el("msgM"), T().needTwo, "err");
+  const btn = el("mergeGo"); btn.disabled = true;
+  say(el("msgM"), T().working);
+  try{
+    // Boş bir PDF aç, her dosyanın tüm sayfalarını sırayla kopyala
+    const out = await PDFDocument.create();
+    for (const f of mergeFiles){
+      const src = await PDFDocument.load(await f.arrayBuffer());
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach(p => out.addPage(p));
+    }
+    download(await out.save(), "birlesik.pdf");
+    say(el("msgM"), T().merged(mergeFiles.length), "ok");
+  } catch(err){
+    say(el("msgM"), T().bad, "err");
+  } finally { btn.disabled = false; }
+});
+
+/* ==================================================================
+   4) SAYFA SEÇME
+   pageState: her sayfa için {selected, rotate}
+================================================================== */
+let pdfBytes = null;      // orijinal dosya baytları
+let pageState = [];
+
+function updatePageCount(){
+  if (!pageState.length) { el("countP").textContent = ""; return; }
+  const sel = pageState.filter(p => p.selected).length;
+  el("countP").textContent = T().nPages(sel, pageState.length);
+}
+
+async function loadForPages(file){
+  el("msgP").hidden = true;
+  try{
+    pdfBytes = new Uint8Array(await file.arrayBuffer());
+
+    // pdf.js dosyayı tüketebildiği için kopya veriyoruz
+    const doc = await pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    pageState = Array.from({length: doc.numPages}, () => ({ selected:true, rotate:0 }));
+
+    const grid = el("gridP");
+    grid.innerHTML = "";
+    el("cardP").hidden = false;
+
+    for (let i = 1; i <= doc.numPages; i++){
+      const page = await doc.getPage(i);
+      const base = page.getViewport({ scale:1 });
+      const viewport = page.getViewport({ scale: 130 / base.width });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+
+      const cell = document.createElement("div");
+      cell.className = "pg sel";
+      cell.tabIndex = 0;
+      cell.dataset.i = i - 1;
+      cell.append(canvas);
+      const no = document.createElement("span");
+      no.className = "no"; no.textContent = i;
+      cell.append(no);
+      grid.append(cell);
+    }
+    updatePageCount();
+  } catch(err){
+    say(el("msgP"), T().bad, "err");
+  }
+}
+
+wireDrop(el("dropP"), el("fileP"), files => { if (files[0]) loadForPages(files[0]); });
+
+// Sayfaya tıklayınca seçimi değiştir
+el("gridP").addEventListener("click", e => {
+  const cell = e.target.closest(".pg"); if (!cell) return;
+  const i = +cell.dataset.i;
+  pageState[i].selected = !pageState[i].selected;
+  cell.classList.toggle("sel", pageState[i].selected);
+  updatePageCount();
+});
+
+function setAll(fn){
+  pageState.forEach((p, i) => {
+    p.selected = fn(p.selected);
+    el("gridP").children[i].classList.toggle("sel", p.selected);
+  });
+  updatePageCount();
+}
+el("selAll").addEventListener("click",  () => setAll(() => true));
+el("selNone").addEventListener("click", () => setAll(() => false));
+el("selInv").addEventListener("click",  () => setAll(v => !v));
+
+// Seçili sayfaları 90° döndür (görsel önizleme değişmiyor, çıktı değişiyor)
+el("rot").addEventListener("click", () => {
+  pageState.forEach((p, i) => {
+    if (p.selected){
+      p.rotate = (p.rotate + 90) % 360;
+      el("gridP").children[i].querySelector("canvas").style.transform =
+        `rotate(${p.rotate}deg) scale(${p.rotate % 180 ? .7 : 1})`;
+    }
+  });
+});
+
+el("pagesGo").addEventListener("click", async () => {
+  const keep = pageState.map((p,i) => p.selected ? i : -1).filter(i => i >= 0);
+  if (!keep.length) return say(el("msgP"), T().pickOne, "err");
+  const btn = el("pagesGo"); btn.disabled = true;
+  say(el("msgP"), T().working);
+  try{
+    const src = await PDFDocument.load(pdfBytes);
+    const out = await PDFDocument.create();
+    const copied = await out.copyPages(src, keep);
+    copied.forEach((page, k) => {
+      const extra = pageState[keep[k]].rotate;
+      if (extra) page.setRotation(degrees((page.getRotation().angle + extra) % 360));
+      out.addPage(page);
+    });
+    download(await out.save(), "secilen-sayfalar.pdf");
+    say(el("msgP"), T().made(keep.length), "ok");
+  } catch(err){
+    say(el("msgP"), T().bad, "err");
+  } finally { btn.disabled = false; }
+});
+
+el("pagesClear").addEventListener("click", () => {
+  pdfBytes = null; pageState = []; el("fileP").value = "";
+  el("gridP").innerHTML = ""; el("cardP").hidden = true; el("msgP").hidden = true;
+  updatePageCount();
+});
+
+applyLang();
+</script>
+</body>
+</html>
