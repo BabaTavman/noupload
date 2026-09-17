@@ -6,6 +6,10 @@
   "homepage": "https://babatavman.github.io/noupload/",
   "scripts": {
     "build": "node build.js",
-    "check": "node build.js --check"
+    "check": "node build.js --check",
+    "test": "node tests/run.js",
+    "test:quick": "node tests/run.js --quick",
+    "test:visual": "node tests/visual-diff.js",
+    "test:live": "node tests/live.js"
   }
 }

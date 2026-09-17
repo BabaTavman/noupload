@@ -4,6 +4,7 @@
 
      node build.js           şablonlardan sayfaları üretir
      node build.js --check   üretilmiş dosyalar güncel mi diye bakar, yazmaz
+     node build.js --print-config   ayarları (adres, diller, sayfalar) JSON olarak yazar; testler buradan okur
 
    Girdi
      src/*.html            sayfa şablonları (index, pdf, foto, foto-pdf)
@@ -60,6 +61,12 @@ const langs = i18nFiles
 
 if (!langs.includes(DEFAULT_LANG)) fail(`i18n/${DEFAULT_LANG}.json yok (varsayılan dil).`);
 if (!langs.includes(X_DEFAULT)) fail(`i18n/${X_DEFAULT}.json yok (x-default dili).`);
+
+// Testler ayarları buradan okur (kopyası tutulmasın diye): node build.js --print-config
+if (process.argv.includes("--print-config")) {
+  console.log(JSON.stringify({ site: SITE, defaultLang: DEFAULT_LANG, xDefault: X_DEFAULT, pages: PAGES, tools: TOOLS, langs }));
+  process.exit(0);
+}
 
 const dict = {};
 for (const code of langs) {

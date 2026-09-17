@@ -18,6 +18,18 @@ Düzenlenecek yerler aşağıda. GitHub Actions yok: üretilen dosyalar depoya c
 `node build.js` (ya da `npm run build`) yalnızca Node ister, kurulacak paket yoktur.
 `node build.js --check` hiçbir şey yazmadan "üretmeyi unuttum mu?" sorusunu yanıtlar.
 
+## Test
+
+```
+npm run test:quick     push'tan önce hızlı tur (yaklaşık 15 saniye)
+npm test               hepsi (yaklaşık 5 dakika)
+```
+
+Sayfaları başsız Chrome/Edge'de açıp kullanıcı gibi kullanan kontroller: etiketler ve site haritası,
+üç aracın işlevi (çevrimdışı dahil), tema ve dar ekran davranışı, site dışına hiç istek çıkmaması.
+Node 22+ ve kurulu bir Chrome ya da Edge yeter; paket kurulmaz. Ayrıntı, görsel karşılaştırma
+(`npm run test:visual`) ve yayındaki siteyi doğrulama (`npm run test:live`) için: [`tests/README.md`](tests/README.md).
+
 ## Neyi nerede değiştiririm
 
 | Ne | Nerede |
