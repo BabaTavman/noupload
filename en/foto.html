@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Foto Küçültücü — hedef boyuta indir</title>
-<meta name="description" content="Fotoğrafı istediğin piksel ölçüsüne ve dosya boyutu sınırının altına indir. Fotoğrafın sunucuya yüklenmez; her şey tarayıcında çalışır.">
-<link rel="canonical" href="https://babatavman.github.io/noupload/foto.html">
+<title>Image Shrinker — get a photo under a size limit</title>
+<meta name="description" content="Resize a photo to the pixel size you need and push it under a file size limit. Your photo is never uploaded; everything runs in your browser.">
+<link rel="canonical" href="https://babatavman.github.io/noupload/en/foto.html">
 <link rel="alternate" hreflang="tr" href="https://babatavman.github.io/noupload/foto.html">
 <link rel="alternate" hreflang="en" href="https://babatavman.github.io/noupload/en/foto.html">
 <link rel="alternate" hreflang="x-default" href="https://babatavman.github.io/noupload/en/foto.html">
@@ -17,7 +17,7 @@
   try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
 </script>
 <style>[hidden]{display:none !important}</style><!-- site.css yüklenemese bile gizli bölümler gizli kalsın -->
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="../assets/site.css">
 <style>
   /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
      bu blok ondan sonra geldiği için aynı seçicide buradaki geçerli olur. */
@@ -72,72 +72,72 @@
 
   <div class="bar">
     <div class="barlead">
-      <a class="back" href="./">← Araçlar</a>
+      <a class="back" href="./">← Tools</a>
       <a class="brand" href="./">
         <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
         <span>NoUpload</span><small>/ foto</small>
       </a>
     </div>
     <div class="barbtns">
-      <button class="langbtn" id="theme">Koyu</button>
-      <a class="langbtn" href="en/foto.html" hreflang="en" lang="en">English</a>
+      <button class="langbtn" id="theme">Dark</button>
+      <a class="langbtn" href="../foto.html" hreflang="tr" lang="tr">Türkçe</a>
     </div>
   </div>
 
   <header>
-    <h1>Foto Küçültücü</h1>
-    <p>Fotoğrafı istediğin piksel ölçüsüne ve dosya boyutu sınırının altına indirir. Başvuru formlarının &quot;en fazla 150 KB&quot; dediği durumlar için.</p>
-    <p class="privacy"><span>●</span> <span>Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.</span></p>
+    <h1>Image Shrinker</h1>
+    <p>Resizes a photo to the pixel size you need and pushes it under a file size limit. For application forms that say &quot;150 KB at most&quot;.</p>
+    <p class="privacy"><span>●</span> <span>Your file is never uploaded — everything runs in your browser.</span></p>
   </header>
 
-  <div id="drop" tabindex="0" role="button" aria-label="Fotoğraf seç">
-    <strong>Fotoğrafı buraya sürükle</strong>
-    <span>ya da tıklayıp seç · JPG, PNG, WebP</span>
+  <div id="drop" tabindex="0" role="button" aria-label="Choose a photo">
+    <strong>Drop a photo here</strong>
+    <span>or click to choose · JPG, PNG, WebP</span>
     <input type="file" id="file" accept="image/*">
   </div>
 
   <div class="card" id="controls" hidden>
     <div class="row">
       <div class="field">
-        <label for="maxW">En fazla genişlik (px)</label>
+        <label for="maxW">Max width (px)</label>
         <input type="number" id="maxW" value="600" min="20" max="10000">
       </div>
       <div class="field">
-        <label for="maxH">En fazla yükseklik (px)</label>
+        <label for="maxH">Max height (px)</label>
         <input type="number" id="maxH" value="800" min="20" max="10000">
       </div>
       <div class="field">
-        <label for="target">Hedef dosya boyutu (KB)</label>
+        <label for="target">Target file size (KB)</label>
         <input type="number" id="target" value="150" min="5" max="20000">
       </div>
     </div>
-    <p class="hint" style="margin:10px 0 14px">Oran korunur — fotoğraf bu ölçülerin içine sığacak şekilde küçültülür, kırpılmaz. Kurumun istediği ölçüyü bilmiyorsan başvuru sayfasındaki şartı kontrol et.</p>
+    <p class="hint" style="margin:10px 0 14px">The aspect ratio is kept — the photo is scaled to fit inside these dimensions and is never cropped. If you don't know the size the institution wants, check the requirements on its application page.</p>
     <div class="row">
-      <button id="go">Küçült</button>
-      <button id="reset" class="ghost">Başka fotoğraf</button>
+      <button id="go">Shrink</button>
+      <button id="reset" class="ghost">Another photo</button>
     </div>
   </div>
 
   <div class="card" id="result" hidden>
     <div class="compare">
       <div class="pane">
-        <h3>Önce</h3>
-        <img id="imgBefore" alt="Orijinal fotoğraf">
+        <h3>Before</h3>
+        <img id="imgBefore" alt="Original photo">
         <div class="stat" id="statBefore"></div>
       </div>
       <div class="pane">
-        <h3>Sonra</h3>
-        <img id="imgAfter" alt="Küçültülmüş fotoğraf">
+        <h3>After</h3>
+        <img id="imgAfter" alt="Shrunk photo">
         <div class="stat" id="statAfter"></div>
       </div>
     </div>
     <p class="verdict" id="verdict" style="margin:14px 0"></p>
-    <button id="download">İndir</button>
+    <button id="download">Download</button>
   </div>
 
   <section class="more">
     <div class="section-head">
-      <h2>Diğer araçlar</h2>
+      <h2>Other tools</h2>
     </div>
     <div class="tools">
       <a class="tool" href="pdf.html">
@@ -145,9 +145,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v14H8z"/><path d="M15 3v4h4"/><path d="M4 8v13h11"/><path d="M11 13h4M11 16h4"/></svg>
         </span>
         <div>
-          <h3>PDF Aracı</h3>
-          <p>Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.</p>
-          <span class="go">Aç →</span>
+          <h3>PDF Tool</h3>
+          <p>Merge files, pick the pages you want as a new PDF, rotate pages.</p>
+          <span class="go">Open →</span>
         </div>
       </a>
       <a class="tool" href="foto-pdf.html">
@@ -155,56 +155,56 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
         </span>
         <div>
-          <h3>Fotoğraftan PDF</h3>
-          <p>Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
-          <span class="go">Aç →</span>
+          <h3>Photos to PDF</h3>
+          <p>Put your slide and whiteboard photos in order and turn them into a single PDF.</p>
+          <span class="go">Open →</span>
         </div>
       </a>
     </div>
   </section>
 
-  <footer>Tek sayfa · sunucu yok · veri toplanmıyor</footer>
+  <footer>Single page · no server · no data collected</footer>
 </div>
 
 <script>
-/* Bu sayfanın metinleri — i18n/tr.json'dan, build.js yerleştirir. Elle değiştirme. */
+/* Bu sayfanın metinleri — i18n/en.json'dan, build.js yerleştirir. Elle değiştirme. */
 const STR = {
  "brand": "NoUpload",
- "back": "← Araçlar",
- "moreH": "Diğer araçlar",
- "open": "Aç →",
- "themeDark": "Koyu",
- "themeLight": "Açık",
- "themeSystem": "Sistem",
- "docTitle": "Foto Küçültücü — hedef boyuta indir",
- "description": "Fotoğrafı istediğin piksel ölçüsüne ve dosya boyutu sınırının altına indir. Fotoğrafın sunucuya yüklenmez; her şey tarayıcında çalışır.",
- "title": "Foto Küçültücü",
- "sub": "Fotoğrafı istediğin piksel ölçüsüne ve dosya boyutu sınırının altına indirir. Başvuru formlarının \"en fazla 150 KB\" dediği durumlar için.",
- "privacy": "Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.",
- "dropLabel": "Fotoğraf seç",
- "drop1": "Fotoğrafı buraya sürükle",
- "drop2": "ya da tıklayıp seç · JPG, PNG, WebP",
- "maxW": "En fazla genişlik (px)",
- "maxH": "En fazla yükseklik (px)",
- "target": "Hedef dosya boyutu (KB)",
- "hint": "Oran korunur — fotoğraf bu ölçülerin içine sığacak şekilde küçültülür, kırpılmaz. Kurumun istediği ölçüyü bilmiyorsan başvuru sayfasındaki şartı kontrol et.",
- "go": "Küçült",
- "reset": "Başka fotoğraf",
- "before": "Önce",
- "after": "Sonra",
- "altBefore": "Orijinal fotoğraf",
- "altAfter": "Küçültülmüş fotoğraf",
- "download": "İndir",
- "foot": "Tek sayfa · sunucu yok · veri toplanmıyor",
- "working": "Küçültülüyor…",
- "ok": "Hedefin altında: {kb} KB. Dosya %{saved} küçüldü.",
- "miss": "En düşük kalitede bile {kb} KB oldu, hedef {target} KB. Piksel ölçüsünü düşürüp tekrar dene.",
- "bad": "Bu dosya okunamadı. Başka bir görsel dene.",
- "suffix": "-kucuk",
- "locale": "tr-TR"
+ "back": "← Tools",
+ "moreH": "Other tools",
+ "open": "Open →",
+ "themeDark": "Dark",
+ "themeLight": "Light",
+ "themeSystem": "System",
+ "docTitle": "Image Shrinker — get a photo under a size limit",
+ "description": "Resize a photo to the pixel size you need and push it under a file size limit. Your photo is never uploaded; everything runs in your browser.",
+ "title": "Image Shrinker",
+ "sub": "Resizes a photo to the pixel size you need and pushes it under a file size limit. For application forms that say \"150 KB at most\".",
+ "privacy": "Your file is never uploaded — everything runs in your browser.",
+ "dropLabel": "Choose a photo",
+ "drop1": "Drop a photo here",
+ "drop2": "or click to choose · JPG, PNG, WebP",
+ "maxW": "Max width (px)",
+ "maxH": "Max height (px)",
+ "target": "Target file size (KB)",
+ "hint": "The aspect ratio is kept — the photo is scaled to fit inside these dimensions and is never cropped. If you don't know the size the institution wants, check the requirements on its application page.",
+ "go": "Shrink",
+ "reset": "Another photo",
+ "before": "Before",
+ "after": "After",
+ "altBefore": "Original photo",
+ "altAfter": "Shrunk photo",
+ "download": "Download",
+ "foot": "Single page · no server · no data collected",
+ "working": "Shrinking…",
+ "ok": "Under the target: {kb} KB. The file got {saved}% smaller.",
+ "miss": "Even at the lowest quality it came to {kb} KB; the target is {target} KB. Lower the pixel size and try again.",
+ "bad": "Couldn't read this file. Try another image.",
+ "suffix": "-small",
+ "locale": "en-US"
 };
 </script>
-<script src="assets/site.js"></script>
+<script src="../assets/site.js"></script>
 <script>
 /* =================================================================
    1) ELEMANLARI YAKALA

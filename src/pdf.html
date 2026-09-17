@@ -1,28 +1,13 @@
 <!doctype html>
-<html lang="tr">
+<html lang="{{lang}}">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PDF Aracı — birleştir, sayfa seç, döndür</title>
-<meta name="description" content="PDF dosyalarını birleştir, istediğin sayfaları seç, döndür. Dosyan sunucuya yüklenmez; her şey tarayıcında çalışır.">
-<link rel="canonical" href="https://babatavman.github.io/noupload/pdf.html">
-<link rel="alternate" hreflang="tr" href="https://babatavman.github.io/noupload/pdf.html">
-<link rel="alternate" hreflang="en" href="https://babatavman.github.io/noupload/en/pdf.html">
-<link rel="alternate" hreflang="x-default" href="https://babatavman.github.io/noupload/en/pdf.html">
-<meta name="theme-color" content="#17607F">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317607F'/%3E%3Cpath d='M10 7h8l5 5v13H10z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M18 7v5h5' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 19h9' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<script>
-  /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
-     Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
-  try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
-</script>
-<style>[hidden]{display:none !important}</style><!-- site.css yüklenemese bile gizli bölümler gizli kalsın -->
-<link rel="stylesheet" href="assets/site.css">
+<meta name="robots" content="noindex"><!-- build:remove — bu satır yalnızca şablonda durur (src/ dizine eklenmesin); üretilen sayfaya girmez -->
+{{> head}}
 
 <!-- pdf-lib: PDF'i oluşturup değiştiren kütüphane -->
-<script src="lib/pdf-lib.min.js"></script>
+<script src="{{root}}lib/pdf-lib.min.js"></script>
 <!-- pdf.js: sayfaları küçük resim olarak çizmek için -->
-<script src="lib/pdf.min.js"></script>
+<script src="{{root}}lib/pdf.min.js"></script>
 
 <style>
   /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
@@ -70,49 +55,37 @@
 <body>
 <div class="wrap">
 
-  <div class="bar">
-    <div class="barlead">
-      <a class="back" href="./">← Araçlar</a>
-      <a class="brand" href="./">
-        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
-        <span>NoUpload</span><small>/ pdf</small>
-      </a>
-    </div>
-    <div class="barbtns">
-      <button class="langbtn" id="theme">Koyu</button>
-      <a class="langbtn" href="en/pdf.html" hreflang="en" lang="en">English</a>
-    </div>
-  </div>
+{{> bar-tool}}
 
   <header>
     <div class="topline">
       <div>
-        <h1>PDF Aracı</h1>
-        <p>PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.</p>
+        <h1>{{t.title}}</h1>
+        <p>{{t.sub}}</p>
       </div>
     </div>
-    <p class="privacy"><span>●</span> <span>Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.</span></p>
+    <p class="privacy"><span>●</span> <span>{{t.privacy}}</span></p>
   </header>
 
   <div class="tabs" role="tablist">
-    <button class="tab" id="tabMerge" role="tab" aria-selected="true">Birleştir</button>
-    <button class="tab" id="tabPages" role="tab" aria-selected="false">Sayfa seç</button>
+    <button class="tab" id="tabMerge" role="tab" aria-selected="true">{{t.tabMerge}}</button>
+    <button class="tab" id="tabPages" role="tab" aria-selected="false">{{t.tabPages}}</button>
   </div>
 
   <!-- ======================= BİRLEŞTİRME ======================= -->
   <section id="paneMerge">
     <div class="drop" id="dropM" tabindex="0" role="button">
-      <strong>PDF dosyalarını buraya sürükle</strong>
-      <span>ya da tıklayıp seç · birden fazla seçebilirsin</span>
+      <strong>{{t.dropM1}}</strong>
+      <span>{{t.dropM2}}</span>
       <input type="file" id="fileM" accept="application/pdf" multiple>
     </div>
 
     <div class="card" id="cardM" hidden style="margin-top:16px">
       <ul class="files" id="listM"></ul>
       <div class="actions" style="margin-top:14px">
-        <button id="mergeGo">Birleştir ve indir</button>
-        <button class="ghost" id="mergeAdd">Dosya ekle</button>
-        <button class="ghost" id="mergeClear">Temizle</button>
+        <button id="mergeGo">{{t.mergeGo}}</button>
+        <button class="ghost" id="mergeAdd">{{t.add}}</button>
+        <button class="ghost" id="mergeClear">{{t.clear}}</button>
         <span class="spacer"></span>
         <span class="count" id="countM"></span>
       </div>
@@ -123,111 +96,35 @@
   <!-- ======================= SAYFA SEÇME ======================= -->
   <section id="panePages" hidden>
     <div class="drop" id="dropP" tabindex="0" role="button">
-      <strong>Tek bir PDF sürükle</strong>
-      <span>sayfaları göreceksin, tutmak istediklerini seç</span>
+      <strong>{{t.dropP1}}</strong>
+      <span>{{t.dropP2}}</span>
       <input type="file" id="fileP" accept="application/pdf">
     </div>
 
     <div class="card" id="cardP" hidden style="margin-top:16px">
       <div class="actions" style="margin-bottom:14px">
-        <button class="ghost" id="selAll">Tümünü seç</button>
-        <button class="ghost" id="selNone">Seçimi bırak</button>
-        <button class="ghost" id="selInv">Tersini seç</button>
-        <button class="ghost" id="rot">Seçilenleri döndür 90°</button>
+        <button class="ghost" id="selAll">{{t.selAll}}</button>
+        <button class="ghost" id="selNone">{{t.selNone}}</button>
+        <button class="ghost" id="selInv">{{t.selInv}}</button>
+        <button class="ghost" id="rot">{{t.rot}}</button>
         <span class="spacer"></span>
         <span class="count" id="countP"></span>
       </div>
       <div class="grid" id="gridP"></div>
       <div class="actions" style="margin-top:16px">
-        <button id="pagesGo">Seçilenlerden PDF oluştur</button>
-        <button class="ghost" id="pagesClear">Temizle</button>
+        <button id="pagesGo">{{t.pagesGo}}</button>
+        <button class="ghost" id="pagesClear">{{t.clear}}</button>
       </div>
       <p class="msg" id="msgP" hidden></p>
     </div>
   </section>
 
-  <section class="more">
-    <div class="section-head">
-      <h2>Diğer araçlar</h2>
-    </div>
-    <div class="tools">
-      <a class="tool" href="foto.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
-        </span>
-        <div>
-          <h3>Foto Küçültücü</h3>
-          <p>Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.</p>
-          <span class="go">Aç →</span>
-        </div>
-      </a>
-      <a class="tool" href="foto-pdf.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
-        </span>
-        <div>
-          <h3>Fotoğraftan PDF</h3>
-          <p>Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
-          <span class="go">Aç →</span>
-        </div>
-      </a>
-    </div>
-  </section>
+{{> more}}
 
-  <footer>Tek sayfa · sunucu yok · veri toplanmıyor</footer>
+  <footer>{{t.foot}}</footer>
 </div>
 
-<script>
-/* Bu sayfanın metinleri — i18n/tr.json'dan, build.js yerleştirir. Elle değiştirme. */
-const STR = {
- "brand": "NoUpload",
- "back": "← Araçlar",
- "moreH": "Diğer araçlar",
- "open": "Aç →",
- "themeDark": "Koyu",
- "themeLight": "Açık",
- "themeSystem": "Sistem",
- "docTitle": "PDF Aracı — birleştir, sayfa seç, döndür",
- "description": "PDF dosyalarını birleştir, istediğin sayfaları seç, döndür. Dosyan sunucuya yüklenmez; her şey tarayıcında çalışır.",
- "title": "PDF Aracı",
- "sub": "PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.",
- "privacy": "Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.",
- "tabMerge": "Birleştir",
- "tabPages": "Sayfa seç",
- "dropM1": "PDF dosyalarını buraya sürükle",
- "dropM2": "ya da tıklayıp seç · birden fazla seçebilirsin",
- "dropP1": "Tek bir PDF sürükle",
- "dropP2": "sayfaları göreceksin, tutmak istediklerini seç",
- "mergeGo": "Birleştir ve indir",
- "add": "Dosya ekle",
- "clear": "Temizle",
- "selAll": "Tümünü seç",
- "selNone": "Seçimi bırak",
- "selInv": "Tersini seç",
- "rot": "Seçilenleri döndür 90°",
- "pagesGo": "Seçilenlerden PDF oluştur",
- "foot": "Tek sayfa · sunucu yok · veri toplanmıyor",
- "up": "yukarı",
- "down": "aşağı",
- "del": "sil",
- "nFiles": {
-  "one": "{n} dosya · tek dosya",
-  "other": "{n} dosya · sıra yukarıdaki gibi"
- },
- "nPages": "{total} sayfadan {sel} tanesi seçili",
- "merged": "{n} dosya birleştirildi ve indirildi.",
- "made": "{n} sayfalık yeni PDF indirildi.",
- "pickOne": "En az bir sayfa seç.",
- "needTwo": "Birleştirmek için en az iki dosya gerekiyor.",
- "bad": "Bu dosya okunamadı. Şifreli ya da bozuk olabilir.",
- "noWorker": "Sayfaları göstermek için gereken dosya yüklenemedi. İnternet bağlantını kontrol edip PDF'i yeniden seç.",
- "working": "İşleniyor…",
- "mergedName": "birlesik.pdf",
- "pagesName": "secilen-sayfalar.pdf",
- "locale": "tr-TR"
-};
-</script>
-<script src="assets/site.js"></script>
+{{> scripts}}
 <script>
 /* ==================================================================
    1) ORTAK YARDIMCILAR
@@ -238,7 +135,7 @@ const { PDFDocument, degrees } = PDFLib;
 // sayfa açılırken belleğe alınır.
 // pdf.js'e yüklenemeyen bir worker verilirse bir daha toparlanamıyor (sayfa yenilenene kadar her PDF'e
 // "bozuk" diyor). O yüzden worker hazır değilse pdf.js hiç çağrılmaz; hazır olunca yeniden denenir.
-const WORKER_URL = "lib/pdf.worker.min.js";
+const WORKER_URL = "{{root}}lib/pdf.worker.min.js";
 pdfjsLib.GlobalWorkerOptions.workerSrc = WORKER_URL;
 const overHttp = location.protocol.startsWith("http");            // diskten (file://) açıldıysa fetch yasak: adres doğrudan kullanılır
 let workerReady = null;

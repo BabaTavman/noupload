@@ -1,0 +1,15 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{t.docTitle}}</title>
+<meta name="description" content="{{t.description}}">
+<link rel="canonical" href="{{canonical}}">
+{{alternates}}
+<meta name="theme-color" content="#17607F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317607F'/%3E%3Cpath d='M10 7h8l5 5v13H10z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M18 7v5h5' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 19h9' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+  /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
+     Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
+  try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
+</script>
+<style>[hidden]{display:none !important}</style><!-- site.css yüklenemese bile gizli bölümler gizli kalsın -->
+<link rel="stylesheet" href="{{root}}assets/site.css">

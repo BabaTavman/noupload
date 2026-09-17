@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NoUpload — dosyanız yüklenmeyen araçlar</title>
-<meta name="description" content="PDF ve görsel araçları. Dosyanız sunucuya yüklenmez, her şey tarayıcınızda çalışır.">
-<link rel="canonical" href="https://babatavman.github.io/noupload/">
+<title>NoUpload — tools that never upload your file</title>
+<meta name="description" content="PDF and image tools. Your file is never uploaded to a server; everything runs in your browser.">
+<link rel="canonical" href="https://babatavman.github.io/noupload/en/">
 <link rel="alternate" hreflang="tr" href="https://babatavman.github.io/noupload/">
 <link rel="alternate" hreflang="en" href="https://babatavman.github.io/noupload/en/">
 <link rel="alternate" hreflang="x-default" href="https://babatavman.github.io/noupload/en/">
@@ -17,7 +17,7 @@
   try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
 </script>
 <style>[hidden]{display:none !important}</style><!-- site.css yüklenemese bile gizli bölümler gizli kalsın -->
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="../assets/site.css">
 <style>
   /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
      bu blok ondan sonra geldiği için aynı seçicide buradaki geçerli olur. */
@@ -91,25 +91,25 @@
       <span>NoUpload</span>
     </a>
     <div class="barbtns">
-      <button class="langbtn" id="theme">Koyu</button>
-      <a class="langbtn" href="en/" hreflang="en" lang="en">English</a>
+      <button class="langbtn" id="theme">Dark</button>
+      <a class="langbtn" href="../" hreflang="tr" lang="tr">Türkçe</a>
     </div>
   </div>
 
   <section class="hero">
     <div>
-      <h1>Dosyanız hiçbir yere yüklenmiyor.</h1>
-      <p>PDF ve görsel araçları. Hepsi tarayıcınızın içinde çalışır — dosyanız bilgisayarınızdan çıkmaz, sunucuya gitmez, kimse göremez.</p>
-      <div class="proof"><span class="dotm"></span><span>Kanıtı basit: sayfayı açtıktan sonra internet bağlantınızı kesin, araçlar çalışmaya devam eder.</span></div>
+      <h1>Your file is never uploaded.</h1>
+      <p>PDF and image tools. Everything runs inside your browser — your file never leaves your computer, never reaches a server, and no one else can see it.</p>
+      <div class="proof"><span class="dotm"></span><span>Easy to verify: load the page, then turn off your internet. The tools keep working.</span></div>
     </div>
 
     <figure class="diagram" style="margin:0">
       <svg viewBox="0 0 420 250" role="img" aria-labelledby="dg-title">
-        <title id="dg-title">Dosya cihazın içinde işleniyor, sunucuya gitmiyor</title>
+        <title id="dg-title">The file is processed inside your device and never reaches a server</title>
         <!-- cihaz -->
         <rect x="18" y="38" width="250" height="168" rx="12" fill="var(--surface-2)" stroke="var(--rule)" stroke-width="1.5"/>
         <rect x="100" y="206" width="86" height="8" rx="3" fill="var(--rule)"/>
-        <text x="30" y="60" font-family="var(--mono)" font-size="10.5" fill="var(--ink-3)" letter-spacing=".08em">SİZİN CİHAZINIZ</text>
+        <text x="30" y="60" font-family="var(--mono)" font-size="10.5" fill="var(--ink-3)" letter-spacing=".08em">YOUR DEVICE</text>
         <!-- giriş dosyası -->
         <g transform="translate(42,88)">
           <path d="M0 0h30l14 14v48H0z" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.6" stroke-linejoin="round"/>
@@ -125,7 +125,7 @@
           <circle cx="30" cy="27" r="11" fill="none" stroke="var(--accent)" stroke-width="2"/>
           <path d="M30 12v6M30 36v6M15 27h6M39 27h6M19.4 16.4l4.2 4.2M36.4 33.4l4.2 4.2M19.4 37.6l4.2-4.2M36.4 20.6l4.2-4.2" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
         </g>
-        <text x="162" y="164" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">tarayıcı</text>
+        <text x="162" y="164" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">browser</text>
         <!-- ok -->
         <path d="M198 119h28" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
         <path d="M222 114l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -143,17 +143,17 @@
           <circle cx="10" cy="11" r="2.2" fill="var(--ink-3)"/><circle cx="10" cy="39" r="2.2" fill="var(--ink-3)"/>
           <path d="M-6 -6L78 56M78 -6L-6 56" stroke="var(--bad)" stroke-width="3" stroke-linecap="round"/>
         </g>
-        <text x="368" y="94" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--bad)">sunucu yok</text>
+        <text x="368" y="94" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--bad)">no server</text>
         <!-- alt not -->
-        <text x="30" y="236" font-family="var(--mono)" font-size="10" fill="var(--ink-3)">dosya ağa hiç çıkmıyor</text>
+        <text x="30" y="236" font-family="var(--mono)" font-size="10" fill="var(--ink-3)">the file never touches the network</text>
       </svg>
     </figure>
   </section>
 
   <section>
     <div class="section-head">
-      <h2>Araçlar</h2>
-      <span>3 araç · hepsi tarayıcıda</span>
+      <h2>Tools</h2>
+      <span>3 tools · all in-browser</span>
     </div>
     <div class="tools">
       <a class="tool" href="pdf.html">
@@ -161,9 +161,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v14H8z"/><path d="M15 3v4h4"/><path d="M4 8v13h11"/><path d="M11 13h4M11 16h4"/></svg>
         </span>
         <div>
-          <h3>PDF Aracı</h3>
-          <p>Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.</p>
-          <span class="go">Aç →</span>
+          <h3>PDF Tool</h3>
+          <p>Merge files, pick the pages you want as a new PDF, rotate pages.</p>
+          <span class="go">Open →</span>
         </div>
       </a>
       <a class="tool" href="foto.html">
@@ -171,9 +171,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
         </span>
         <div>
-          <h3>Foto Küçültücü</h3>
-          <p>Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.</p>
-          <span class="go">Aç →</span>
+          <h3>Image Shrinker</h3>
+          <p>Resize a photo and push it under a target file size.</p>
+          <span class="go">Open →</span>
         </div>
       </a>
       <a class="tool" href="foto-pdf.html">
@@ -181,9 +181,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
         </span>
         <div>
-          <h3>Fotoğraftan PDF</h3>
-          <p>Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
-          <span class="go">Aç →</span>
+          <h3>Photos to PDF</h3>
+          <p>Put your slide and whiteboard photos in order and turn them into a single PDF.</p>
+          <span class="go">Open →</span>
         </div>
       </a>
     </div>
@@ -191,32 +191,32 @@
 
   <section>
     <div class="section-head">
-      <h2>Neden yüklemiyoruz</h2>
+      <h2>Why we don't upload</h2>
     </div>
     <div class="compare">
       <div class="side">
-        <h3><span class="pill them">Diğer araçlar</span></h3>
+        <h3><span class="pill them">Other tools</span></h3>
         <svg viewBox="0 0 400 96" role="img" aria-labelledby="c1">
-          <title id="c1">Dosya sunucuya gidiyor, orada işleniyor, geri geliyor</title>
+          <title id="c1">The file goes to a server, gets processed there, comes back</title>
           <g transform="translate(14,28)"><path d="M0 0h22l10 10v30H0z" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 0v10h10" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></g>
-          <text x="30" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">siz</text>
+          <text x="30" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">you</text>
           <path d="M58 48h108" stroke="var(--ink-3)" stroke-width="1.6" stroke-dasharray="4 4"/>
           <path d="M160 43l6 5-6 5" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           <g transform="translate(174,20)"><rect x="0" y="0" width="56" height="24" rx="4" fill="var(--surface-2)" stroke="var(--bad)" stroke-width="1.5"/><rect x="0" y="30" width="56" height="24" rx="4" fill="var(--surface-2)" stroke="var(--bad)" stroke-width="1.5"/><circle cx="9" cy="12" r="2" fill="var(--bad)"/><circle cx="9" cy="42" r="2" fill="var(--bad)"/></g>
-          <text x="202" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--bad)">onların sunucusu</text>
+          <text x="202" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--bad)">their server</text>
           <path d="M238 48h108" stroke="var(--ink-3)" stroke-width="1.6" stroke-dasharray="4 4"/>
           <path d="M340 43l6 5-6 5" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           <g transform="translate(354,28)"><path d="M0 0h22l10 10v30H0z" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 0v10h10" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></g>
-          <text x="370" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">geri</text>
+          <text x="370" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">back</text>
         </svg>
-        <p>Dosyanız onların makinesine gider, orada işlenir, size geri gönderilir. Sonra “birkaç saat içinde siliyoruz” derler. Sözleşme, bordro ya da kimlik taramasıysa bu söze güvenmek zorundasınız.</p>
+        <p>Your file travels to their machine, gets processed there and is sent back. Then they promise to delete it “within a few hours.” For a contract, a payslip or an ID scan, you have to take that on trust.</p>
       </div>
       <div class="side here">
-        <h3><span class="pill us">Burada</span></h3>
+        <h3><span class="pill us">Here</span></h3>
         <svg viewBox="0 0 400 96" role="img" aria-labelledby="c2">
-          <title id="c2">Dosya cihazınızda işleniyor, ağa hiç çıkmıyor</title>
+          <title id="c2">The file is processed on your device and never touches the network</title>
           <rect x="8" y="10" width="384" height="62" rx="10" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <text x="20" y="26" font-family="var(--mono)" font-size="9.5" fill="var(--accent)" letter-spacing=".06em">SİZİN CİHAZINIZ</text>
+          <text x="20" y="26" font-family="var(--mono)" font-size="9.5" fill="var(--accent)" letter-spacing=".06em">YOUR DEVICE</text>
           <g transform="translate(40,32)"><path d="M0 0h20l9 9v26H0z" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 0v9h9" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></g>
           <path d="M84 50h60" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
           <path d="M138 45l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -224,58 +224,58 @@
           <path d="M226 50h60" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
           <path d="M280 45l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           <g transform="translate(302,32)"><path d="M0 0h20l9 9v26H0z" fill="var(--surface)" stroke="var(--good)" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 0v9h9" fill="none" stroke="var(--good)" stroke-width="1.5"/><path d="M7 20l4 4 8-9" fill="none" stroke="var(--good)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
-          <text x="200" y="88" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">ağ bağlantısı kullanılmıyor</text>
+          <text x="200" y="88" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">no network connection used</text>
         </svg>
-        <p>Güvenmeniz gereken bir söz yok. Sunucumuz yok. Bütün işlem sizin tarayıcınızda yapılıyor, dosya ağa hiç çıkmıyor — bunu internet bağlantınızı keserek kendiniz doğrulayabilirsiniz.</p>
+        <p>There is no promise to trust. There is no server. Everything happens in your own browser and the file never touches the network — you can verify this yourself by turning off your internet.</p>
       </div>
     </div>
   </section>
 
   <footer>
-    <span>Sunucu yok · hesap yok · veri toplanmıyor</span>
-    <span><a href="https://github.com/BabaTavman/noupload" rel="noopener">Kaynak kodu açık</a></span>
+    <span>No server · no account · no tracking</span>
+    <span><a href="https://github.com/BabaTavman/noupload" rel="noopener">Source code is public</a></span>
   </footer>
 </div>
 
 <script>
-/* Bu sayfanın metinleri — i18n/tr.json'dan, build.js yerleştirir. Elle değiştirme. */
+/* Bu sayfanın metinleri — i18n/en.json'dan, build.js yerleştirir. Elle değiştirme. */
 const STR = {
  "brand": "NoUpload",
- "back": "← Araçlar",
- "moreH": "Diğer araçlar",
- "open": "Aç →",
- "themeDark": "Koyu",
- "themeLight": "Açık",
- "themeSystem": "Sistem",
- "docTitle": "NoUpload — dosyanız yüklenmeyen araçlar",
- "description": "PDF ve görsel araçları. Dosyanız sunucuya yüklenmez, her şey tarayıcınızda çalışır.",
- "h": "Dosyanız hiçbir yere yüklenmiyor.",
- "sub": "PDF ve görsel araçları. Hepsi tarayıcınızın içinde çalışır — dosyanız bilgisayarınızdan çıkmaz, sunucuya gitmez, kimse göremez.",
- "proof": "Kanıtı basit: sayfayı açtıktan sonra internet bağlantınızı kesin, araçlar çalışmaya devam eder.",
- "dgTitle": "Dosya cihazın içinde işleniyor, sunucuya gitmiyor",
- "dgDevice": "SİZİN CİHAZINIZ",
- "dgBrowser": "tarayıcı",
- "dgServer": "sunucu yok",
- "dgNote": "dosya ağa hiç çıkmıyor",
- "toolsH": "Araçlar",
- "toolsN": "3 araç · hepsi tarayıcıda",
- "whyH": "Neden yüklemiyoruz",
- "pillThem": "Diğer araçlar",
- "pillUs": "Burada",
- "c1Title": "Dosya sunucuya gidiyor, orada işleniyor, geri geliyor",
- "c2Title": "Dosya cihazınızda işleniyor, ağa hiç çıkmıyor",
- "lblYou": "siz",
- "lblServer": "onların sunucusu",
- "lblBack": "geri",
- "lblDevice": "SİZİN CİHAZINIZ",
- "lblNoNet": "ağ bağlantısı kullanılmıyor",
- "why1": "Dosyanız onların makinesine gider, orada işlenir, size geri gönderilir. Sonra “birkaç saat içinde siliyoruz” derler. Sözleşme, bordro ya da kimlik taramasıysa bu söze güvenmek zorundasınız.",
- "why2": "Güvenmeniz gereken bir söz yok. Sunucumuz yok. Bütün işlem sizin tarayıcınızda yapılıyor, dosya ağa hiç çıkmıyor — bunu internet bağlantınızı keserek kendiniz doğrulayabilirsiniz.",
- "foot": "Sunucu yok · hesap yok · veri toplanmıyor",
- "src": "Kaynak kodu açık",
- "locale": "tr-TR"
+ "back": "← Tools",
+ "moreH": "Other tools",
+ "open": "Open →",
+ "themeDark": "Dark",
+ "themeLight": "Light",
+ "themeSystem": "System",
+ "docTitle": "NoUpload — tools that never upload your file",
+ "description": "PDF and image tools. Your file is never uploaded to a server; everything runs in your browser.",
+ "h": "Your file is never uploaded.",
+ "sub": "PDF and image tools. Everything runs inside your browser — your file never leaves your computer, never reaches a server, and no one else can see it.",
+ "proof": "Easy to verify: load the page, then turn off your internet. The tools keep working.",
+ "dgTitle": "The file is processed inside your device and never reaches a server",
+ "dgDevice": "YOUR DEVICE",
+ "dgBrowser": "browser",
+ "dgServer": "no server",
+ "dgNote": "the file never touches the network",
+ "toolsH": "Tools",
+ "toolsN": "3 tools · all in-browser",
+ "whyH": "Why we don't upload",
+ "pillThem": "Other tools",
+ "pillUs": "Here",
+ "c1Title": "The file goes to a server, gets processed there, comes back",
+ "c2Title": "The file is processed on your device and never touches the network",
+ "lblYou": "you",
+ "lblServer": "their server",
+ "lblBack": "back",
+ "lblDevice": "YOUR DEVICE",
+ "lblNoNet": "no network connection used",
+ "why1": "Your file travels to their machine, gets processed there and is sent back. Then they promise to delete it “within a few hours.” For a contract, a payslip or an ID scan, you have to take that on trust.",
+ "why2": "There is no promise to trust. There is no server. Everything happens in your own browser and the file never touches the network — you can verify this yourself by turning off your internet.",
+ "foot": "No server · no account · no tracking",
+ "src": "Source code is public",
+ "locale": "en-US"
 };
 </script>
-<script src="assets/site.js"></script>
+<script src="../assets/site.js"></script>
 </body>
 </html>

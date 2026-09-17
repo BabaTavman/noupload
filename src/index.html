@@ -1,23 +1,8 @@
 <!doctype html>
-<html lang="tr">
+<html lang="{{lang}}">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NoUpload — dosyanız yüklenmeyen araçlar</title>
-<meta name="description" content="PDF ve görsel araçları. Dosyanız sunucuya yüklenmez, her şey tarayıcınızda çalışır.">
-<link rel="canonical" href="https://babatavman.github.io/noupload/">
-<link rel="alternate" hreflang="tr" href="https://babatavman.github.io/noupload/">
-<link rel="alternate" hreflang="en" href="https://babatavman.github.io/noupload/en/">
-<link rel="alternate" hreflang="x-default" href="https://babatavman.github.io/noupload/en/">
-<meta name="theme-color" content="#17607F">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317607F'/%3E%3Cpath d='M10 7h8l5 5v13H10z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M18 7v5h5' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 19h9' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
-<script>
-  /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
-     Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
-  try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
-</script>
-<style>[hidden]{display:none !important}</style><!-- site.css yüklenemese bile gizli bölümler gizli kalsın -->
-<link rel="stylesheet" href="assets/site.css">
+<meta name="robots" content="noindex"><!-- build:remove — bu satır yalnızca şablonda durur (src/ dizine eklenmesin); üretilen sayfaya girmez -->
+{{> head}}
 <style>
   /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
      bu blok ondan sonra geldiği için aynı seçicide buradaki geçerli olur. */
@@ -81,35 +66,22 @@
 <body>
 <div class="wrap">
 
-  <div class="bar" data-langs="2">
-    <a class="brand" href="./">
-      <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
-          <path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/>
-        </svg>
-      </span>
-      <span>NoUpload</span>
-    </a>
-    <div class="barbtns">
-      <button class="langbtn" id="theme">Koyu</button>
-      <a class="langbtn" href="en/" hreflang="en" lang="en">English</a>
-    </div>
-  </div>
+{{> bar-home}}
 
   <section class="hero">
     <div>
-      <h1>Dosyanız hiçbir yere yüklenmiyor.</h1>
-      <p>PDF ve görsel araçları. Hepsi tarayıcınızın içinde çalışır — dosyanız bilgisayarınızdan çıkmaz, sunucuya gitmez, kimse göremez.</p>
-      <div class="proof"><span class="dotm"></span><span>Kanıtı basit: sayfayı açtıktan sonra internet bağlantınızı kesin, araçlar çalışmaya devam eder.</span></div>
+      <h1>{{t.h}}</h1>
+      <p>{{t.sub}}</p>
+      <div class="proof"><span class="dotm"></span><span>{{t.proof}}</span></div>
     </div>
 
     <figure class="diagram" style="margin:0">
       <svg viewBox="0 0 420 250" role="img" aria-labelledby="dg-title">
-        <title id="dg-title">Dosya cihazın içinde işleniyor, sunucuya gitmiyor</title>
+        <title id="dg-title">{{t.dgTitle}}</title>
         <!-- cihaz -->
         <rect x="18" y="38" width="250" height="168" rx="12" fill="var(--surface-2)" stroke="var(--rule)" stroke-width="1.5"/>
         <rect x="100" y="206" width="86" height="8" rx="3" fill="var(--rule)"/>
-        <text x="30" y="60" font-family="var(--mono)" font-size="10.5" fill="var(--ink-3)" letter-spacing=".08em">SİZİN CİHAZINIZ</text>
+        <text x="30" y="60" font-family="var(--mono)" font-size="10.5" fill="var(--ink-3)" letter-spacing=".08em">{{t.dgDevice}}</text>
         <!-- giriş dosyası -->
         <g transform="translate(42,88)">
           <path d="M0 0h30l14 14v48H0z" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.6" stroke-linejoin="round"/>
@@ -125,7 +97,7 @@
           <circle cx="30" cy="27" r="11" fill="none" stroke="var(--accent)" stroke-width="2"/>
           <path d="M30 12v6M30 36v6M15 27h6M39 27h6M19.4 16.4l4.2 4.2M36.4 33.4l4.2 4.2M19.4 37.6l4.2-4.2M36.4 20.6l4.2-4.2" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
         </g>
-        <text x="162" y="164" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">tarayıcı</text>
+        <text x="162" y="164" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">{{t.dgBrowser}}</text>
         <!-- ok -->
         <path d="M198 119h28" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
         <path d="M222 114l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -143,80 +115,51 @@
           <circle cx="10" cy="11" r="2.2" fill="var(--ink-3)"/><circle cx="10" cy="39" r="2.2" fill="var(--ink-3)"/>
           <path d="M-6 -6L78 56M78 -6L-6 56" stroke="var(--bad)" stroke-width="3" stroke-linecap="round"/>
         </g>
-        <text x="368" y="94" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--bad)">sunucu yok</text>
+        <text x="368" y="94" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--bad)">{{t.dgServer}}</text>
         <!-- alt not -->
-        <text x="30" y="236" font-family="var(--mono)" font-size="10" fill="var(--ink-3)">dosya ağa hiç çıkmıyor</text>
+        <text x="30" y="236" font-family="var(--mono)" font-size="10" fill="var(--ink-3)">{{t.dgNote}}</text>
       </svg>
     </figure>
   </section>
 
   <section>
     <div class="section-head">
-      <h2>Araçlar</h2>
-      <span>3 araç · hepsi tarayıcıda</span>
+      <h2>{{t.toolsH}}</h2>
+      <span>{{t.toolsN}}</span>
     </div>
     <div class="tools">
-      <a class="tool" href="pdf.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v14H8z"/><path d="M15 3v4h4"/><path d="M4 8v13h11"/><path d="M11 13h4M11 16h4"/></svg>
-        </span>
-        <div>
-          <h3>PDF Aracı</h3>
-          <p>Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.</p>
-          <span class="go">Aç →</span>
-        </div>
-      </a>
-      <a class="tool" href="foto.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
-        </span>
-        <div>
-          <h3>Foto Küçültücü</h3>
-          <p>Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.</p>
-          <span class="go">Aç →</span>
-        </div>
-      </a>
-      <a class="tool" href="foto-pdf.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
-        </span>
-        <div>
-          <h3>Fotoğraftan PDF</h3>
-          <p>Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
-          <span class="go">Aç →</span>
-        </div>
-      </a>
+{{toolCards}}
     </div>
   </section>
 
   <section>
     <div class="section-head">
-      <h2>Neden yüklemiyoruz</h2>
+      <h2>{{t.whyH}}</h2>
     </div>
     <div class="compare">
       <div class="side">
-        <h3><span class="pill them">Diğer araçlar</span></h3>
+        <h3><span class="pill them">{{t.pillThem}}</span></h3>
         <svg viewBox="0 0 400 96" role="img" aria-labelledby="c1">
-          <title id="c1">Dosya sunucuya gidiyor, orada işleniyor, geri geliyor</title>
+          <title id="c1">{{t.c1Title}}</title>
           <g transform="translate(14,28)"><path d="M0 0h22l10 10v30H0z" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 0v10h10" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></g>
-          <text x="30" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">siz</text>
+          <text x="30" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">{{t.lblYou}}</text>
           <path d="M58 48h108" stroke="var(--ink-3)" stroke-width="1.6" stroke-dasharray="4 4"/>
           <path d="M160 43l6 5-6 5" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           <g transform="translate(174,20)"><rect x="0" y="0" width="56" height="24" rx="4" fill="var(--surface-2)" stroke="var(--bad)" stroke-width="1.5"/><rect x="0" y="30" width="56" height="24" rx="4" fill="var(--surface-2)" stroke="var(--bad)" stroke-width="1.5"/><circle cx="9" cy="12" r="2" fill="var(--bad)"/><circle cx="9" cy="42" r="2" fill="var(--bad)"/></g>
-          <text x="202" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--bad)">onların sunucusu</text>
+          <text x="202" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--bad)">{{t.lblServer}}</text>
           <path d="M238 48h108" stroke="var(--ink-3)" stroke-width="1.6" stroke-dasharray="4 4"/>
           <path d="M340 43l6 5-6 5" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           <g transform="translate(354,28)"><path d="M0 0h22l10 10v30H0z" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 0v10h10" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></g>
-          <text x="370" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">geri</text>
+          <text x="370" y="86" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">{{t.lblBack}}</text>
         </svg>
-        <p>Dosyanız onların makinesine gider, orada işlenir, size geri gönderilir. Sonra “birkaç saat içinde siliyoruz” derler. Sözleşme, bordro ya da kimlik taramasıysa bu söze güvenmek zorundasınız.</p>
+        <p>{{t.why1}}</p>
       </div>
       <div class="side here">
-        <h3><span class="pill us">Burada</span></h3>
+        <h3><span class="pill us">{{t.pillUs}}</span></h3>
         <svg viewBox="0 0 400 96" role="img" aria-labelledby="c2">
-          <title id="c2">Dosya cihazınızda işleniyor, ağa hiç çıkmıyor</title>
+          <title id="c2">{{t.c2Title}}</title>
           <rect x="8" y="10" width="384" height="62" rx="10" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <text x="20" y="26" font-family="var(--mono)" font-size="9.5" fill="var(--accent)" letter-spacing=".06em">SİZİN CİHAZINIZ</text>
+          <text x="20" y="26" font-family="var(--mono)" font-size="9.5" fill="var(--accent)" letter-spacing=".06em">{{t.lblDevice}}</text>
           <g transform="translate(40,32)"><path d="M0 0h20l9 9v26H0z" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 0v9h9" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></g>
           <path d="M84 50h60" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
           <path d="M138 45l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -224,58 +167,19 @@
           <path d="M226 50h60" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
           <path d="M280 45l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           <g transform="translate(302,32)"><path d="M0 0h20l9 9v26H0z" fill="var(--surface)" stroke="var(--good)" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 0v9h9" fill="none" stroke="var(--good)" stroke-width="1.5"/><path d="M7 20l4 4 8-9" fill="none" stroke="var(--good)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
-          <text x="200" y="88" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">ağ bağlantısı kullanılmıyor</text>
+          <text x="200" y="88" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-3)">{{t.lblNoNet}}</text>
         </svg>
-        <p>Güvenmeniz gereken bir söz yok. Sunucumuz yok. Bütün işlem sizin tarayıcınızda yapılıyor, dosya ağa hiç çıkmıyor — bunu internet bağlantınızı keserek kendiniz doğrulayabilirsiniz.</p>
+        <p>{{t.why2}}</p>
       </div>
     </div>
   </section>
 
   <footer>
-    <span>Sunucu yok · hesap yok · veri toplanmıyor</span>
-    <span><a href="https://github.com/BabaTavman/noupload" rel="noopener">Kaynak kodu açık</a></span>
+    <span>{{t.foot}}</span>
+    <span><a href="https://github.com/BabaTavman/noupload" rel="noopener">{{t.src}}</a></span>
   </footer>
 </div>
 
-<script>
-/* Bu sayfanın metinleri — i18n/tr.json'dan, build.js yerleştirir. Elle değiştirme. */
-const STR = {
- "brand": "NoUpload",
- "back": "← Araçlar",
- "moreH": "Diğer araçlar",
- "open": "Aç →",
- "themeDark": "Koyu",
- "themeLight": "Açık",
- "themeSystem": "Sistem",
- "docTitle": "NoUpload — dosyanız yüklenmeyen araçlar",
- "description": "PDF ve görsel araçları. Dosyanız sunucuya yüklenmez, her şey tarayıcınızda çalışır.",
- "h": "Dosyanız hiçbir yere yüklenmiyor.",
- "sub": "PDF ve görsel araçları. Hepsi tarayıcınızın içinde çalışır — dosyanız bilgisayarınızdan çıkmaz, sunucuya gitmez, kimse göremez.",
- "proof": "Kanıtı basit: sayfayı açtıktan sonra internet bağlantınızı kesin, araçlar çalışmaya devam eder.",
- "dgTitle": "Dosya cihazın içinde işleniyor, sunucuya gitmiyor",
- "dgDevice": "SİZİN CİHAZINIZ",
- "dgBrowser": "tarayıcı",
- "dgServer": "sunucu yok",
- "dgNote": "dosya ağa hiç çıkmıyor",
- "toolsH": "Araçlar",
- "toolsN": "3 araç · hepsi tarayıcıda",
- "whyH": "Neden yüklemiyoruz",
- "pillThem": "Diğer araçlar",
- "pillUs": "Burada",
- "c1Title": "Dosya sunucuya gidiyor, orada işleniyor, geri geliyor",
- "c2Title": "Dosya cihazınızda işleniyor, ağa hiç çıkmıyor",
- "lblYou": "siz",
- "lblServer": "onların sunucusu",
- "lblBack": "geri",
- "lblDevice": "SİZİN CİHAZINIZ",
- "lblNoNet": "ağ bağlantısı kullanılmıyor",
- "why1": "Dosyanız onların makinesine gider, orada işlenir, size geri gönderilir. Sonra “birkaç saat içinde siliyoruz” derler. Sözleşme, bordro ya da kimlik taramasıysa bu söze güvenmek zorundasınız.",
- "why2": "Güvenmeniz gereken bir söz yok. Sunucumuz yok. Bütün işlem sizin tarayıcınızda yapılıyor, dosya ağa hiç çıkmıyor — bunu internet bağlantınızı keserek kendiniz doğrulayabilirsiniz.",
- "foot": "Sunucu yok · hesap yok · veri toplanmıyor",
- "src": "Kaynak kodu açık",
- "locale": "tr-TR"
-};
-</script>
-<script src="assets/site.js"></script>
+{{> scripts}}
 </body>
 </html>

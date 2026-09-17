@@ -1,0 +1,184 @@
+{
+  "lang": {
+    "name": "English",
+    "locale": "en-US"
+  },
+
+  "common": {
+    "brand": "NoUpload",
+    "back": "← Tools",
+    "moreH": "Other tools",
+    "open": "Open →",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "themeSystem": "System",
+    "tools": {
+      "pdf": {
+        "title": "PDF Tool",
+        "desc": "Merge files, pick the pages you want as a new PDF, rotate pages."
+      },
+      "foto": {
+        "title": "Image Shrinker",
+        "desc": "Resize a photo and push it under a target file size."
+      },
+      "foto-pdf": {
+        "title": "Photos to PDF",
+        "desc": "Put your slide and whiteboard photos in order and turn them into a single PDF."
+      }
+    }
+  },
+
+  "index": {
+    "docTitle": "NoUpload — tools that never upload your file",
+    "description": "PDF and image tools. Your file is never uploaded to a server; everything runs in your browser.",
+    "h": "Your file is never uploaded.",
+    "sub": "PDF and image tools. Everything runs inside your browser — your file never leaves your computer, never reaches a server, and no one else can see it.",
+    "proof": "Easy to verify: load the page, then turn off your internet. The tools keep working.",
+    "dgTitle": "The file is processed inside your device and never reaches a server",
+    "dgDevice": "YOUR DEVICE",
+    "dgBrowser": "browser",
+    "dgServer": "no server",
+    "dgNote": "the file never touches the network",
+    "toolsH": "Tools",
+    "toolsN": "{toolCount} tools · all in-browser",
+    "whyH": "Why we don't upload",
+    "pillThem": "Other tools",
+    "pillUs": "Here",
+    "c1Title": "The file goes to a server, gets processed there, comes back",
+    "c2Title": "The file is processed on your device and never touches the network",
+    "lblYou": "you",
+    "lblServer": "their server",
+    "lblBack": "back",
+    "lblDevice": "YOUR DEVICE",
+    "lblNoNet": "no network connection used",
+    "why1": "Your file travels to their machine, gets processed there and is sent back. Then they promise to delete it “within a few hours.” For a contract, a payslip or an ID scan, you have to take that on trust.",
+    "why2": "There is no promise to trust. There is no server. Everything happens in your own browser and the file never touches the network — you can verify this yourself by turning off your internet.",
+    "foot": "No server · no account · no tracking",
+    "src": "Source code is public"
+  },
+
+  "pdf": {
+    "docTitle": "PDF Tool — merge, select pages, rotate",
+    "description": "Merge PDFs, pick the pages you want, rotate them. Your file is never uploaded; everything runs in your browser.",
+    "title": "PDF Tool",
+    "sub": "Merge PDFs, pick the pages you want as a new file, rotate pages.",
+    "privacy": "Your file is never uploaded — everything runs in your browser.",
+    "tabMerge": "Merge",
+    "tabPages": "Select pages",
+    "dropM1": "Drop PDF files here",
+    "dropM2": "or click to choose · you can pick several",
+    "dropP1": "Drop a single PDF",
+    "dropP2": "you'll see the pages — select the ones to keep",
+    "mergeGo": "Merge and download",
+    "add": "Add files",
+    "clear": "Clear",
+    "selAll": "Select all",
+    "selNone": "Clear selection",
+    "selInv": "Invert selection",
+    "rot": "Rotate selected 90°",
+    "pagesGo": "Build PDF from selection",
+    "foot": "Single page · no server · no data collected",
+    "up": "move up",
+    "down": "move down",
+    "del": "remove",
+    "nFiles": {
+      "one": "{n} file · order as listed above",
+      "other": "{n} files · order as listed above"
+    },
+    "nPages": {
+      "one": "{sel} of {total} page selected",
+      "other": "{sel} of {total} pages selected"
+    },
+    "merged": "Merged {n} files and downloaded.",
+    "made": "Downloaded a new {n}-page PDF.",
+    "pickOne": "Select at least one page.",
+    "needTwo": "You need at least two files to merge.",
+    "bad": "Couldn't read this file. It may be encrypted or damaged.",
+    "noWorker": "The file needed to show the pages couldn't be loaded. Check your internet connection and choose the PDF again.",
+    "working": "Working…",
+    "mergedName": "merged.pdf",
+    "pagesName": "selected-pages.pdf"
+  },
+
+  "foto": {
+    "docTitle": "Image Shrinker — get a photo under a size limit",
+    "description": "Resize a photo to the pixel size you need and push it under a file size limit. Your photo is never uploaded; everything runs in your browser.",
+    "title": "Image Shrinker",
+    "sub": "Resizes a photo to the pixel size you need and pushes it under a file size limit. For application forms that say \"150 KB at most\".",
+    "privacy": "Your file is never uploaded — everything runs in your browser.",
+    "dropLabel": "Choose a photo",
+    "drop1": "Drop a photo here",
+    "drop2": "or click to choose · JPG, PNG, WebP",
+    "maxW": "Max width (px)",
+    "maxH": "Max height (px)",
+    "target": "Target file size (KB)",
+    "hint": "The aspect ratio is kept — the photo is scaled to fit inside these dimensions and is never cropped. If you don't know the size the institution wants, check the requirements on its application page.",
+    "go": "Shrink",
+    "reset": "Another photo",
+    "before": "Before",
+    "after": "After",
+    "altBefore": "Original photo",
+    "altAfter": "Shrunk photo",
+    "download": "Download",
+    "foot": "Single page · no server · no data collected",
+    "working": "Shrinking…",
+    "ok": "Under the target: {kb} KB. The file got {saved}% smaller.",
+    "miss": "Even at the lowest quality it came to {kb} KB; the target is {target} KB. Lower the pixel size and try again.",
+    "bad": "Couldn't read this file. Try another image.",
+    "suffix": "-small"
+  },
+
+  "foto-pdf": {
+    "docTitle": "Photos to PDF — turn photos into one PDF",
+    "description": "Put photos of slides, whiteboards or notes in order and make a single PDF. Your photos are never uploaded; everything runs in your browser.",
+    "title": "Photos to PDF",
+    "sub": "Put photos of slides, whiteboards or notes in order and make a single PDF.",
+    "privacy": "Your photos are never uploaded — everything runs in your browser.",
+    "pick": "Choose photos",
+    "pickMore": "Add photos",
+    "dropHint": "or drag and drop photos onto this page",
+    "clear": "Clear",
+    "orderHint": "Photos are added in the order they were taken. Use the buttons under each photo to reorder, rotate or remove it.",
+    "gridLabel": "Selected photos",
+    "up": "Move earlier",
+    "down": "Move later",
+    "rot": "Rotate 90°",
+    "del": "Remove",
+    "sizeL": "Page size",
+    "sizeA4": "A4",
+    "sizeLetter": "Letter",
+    "sizePhoto": "Photo size",
+    "sizeHint": "Page orientation (portrait / landscape) follows each photo automatically.",
+    "qualL": "Quality",
+    "qSmall": "Small file",
+    "qBalanced": "Balanced",
+    "qHigh": "High",
+    "make": "Create PDF",
+    "cancel": "Cancel",
+    "download": "Download",
+    "bigHint": "If you're going to email it, try the Small file setting.",
+    "foot": "Single page · no server · no data collected",
+    "fileName": "lecture-notes.pdf",
+    "noneOk": "None of the photos could be opened, so no PDF was created.",
+    "noLib": "The PDF library couldn't be loaded. Check your internet connection and try again; your photos are still here.",
+    "fail": "Something went wrong while creating the PDF. Try again with fewer photos or with “Small file”.",
+    "nPhotos": {
+      "one": "{n} photo",
+      "other": "{n} photos"
+    },
+    "reading": "Reading photos… {done} / {total}",
+    "skipped": {
+      "one": "{n} file couldn't be opened and was skipped: {names}",
+      "other": "{n} files couldn't be opened and were skipped: {names}"
+    },
+    "failed": {
+      "one": "{n} photo couldn't be added to the PDF: {names}",
+      "other": "{n} photos couldn't be added to the PDF: {names}"
+    },
+    "qualHint": "Longest edge {edge} px · JPEG {q}%",
+    "done": {
+      "one": "{n} page · {size}",
+      "other": "{n} pages · {size}"
+    }
+  }
+}

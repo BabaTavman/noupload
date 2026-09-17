@@ -1,0 +1,2 @@
+# Kütüphane dosyaları bayt bayt korunsun (özetleri lib/README.md'de): Windows'ta satır sonu dönüştürülmesin
+lib/*.js -text

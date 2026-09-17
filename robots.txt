@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://babatavman.github.io/noupload/sitemap.xml

@@ -1,0 +1,11 @@
+{
+  "name": "noupload",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dosyanın sunucuya yüklenmediği, tamamen tarayıcıda çalışan PDF ve görsel araçları.",
+  "homepage": "https://babatavman.github.io/noupload/",
+  "scripts": {
+    "build": "node build.js",
+    "check": "node build.js --check"
+  }
+}
