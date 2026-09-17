@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fotoğraftan PDF — fotoğrafları tek PDF yap</title>
+<script>
+  /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
+     Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
+  try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
+</script>
+
+<!-- pdf-lib: PDF'i oluşturan kütüphane (pdf.html'dekiyle aynı). defer: bağlantı yavaşsa sayfa onu
+     beklemeden açılır; yüklenemediyse "PDF oluştur"a basıldığında yeniden denenir. -->
+<script id="pdflib" defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+<style>
+  :root{
+    --ground:#EEF1F3; --surface:#FFFFFF; --surface-2:#F5F8FA;
+    --ink:#15212B; --ink-2:#48606F; --ink-3:#7B93A2;
+    --rule:#D3DDE3; --accent:#17607F; --accent-ink:#FFFFFF;
+    --accent-soft:#DCE9F0; --good:#2A6B4F; --warn:#8C5A10;
+    --radius:10px;
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  /* Koyu renkler iki yerde: sistem koyuysa (kullanıcı "açık" seçmediyse)
+     ve kullanıcı "koyu" seçtiyse. İkisi aynı kalmalı. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --ground:#101A21; --surface:#18242D; --surface-2:#1E2C36;
+      --ink:#E6EDF2; --ink-2:#AEC1CC; --ink-3:#7C929F;
+      --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
+      --accent-soft:#1B3441; --good:#67B089; --warn:#D9A458;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --ground:#101A21; --surface:#18242D; --surface-2:#1E2C36;
+    --ink:#E6EDF2; --ink-2:#AEC1CC; --ink-3:#7C929F;
+    --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
+    --accent-soft:#1B3441; --good:#67B089; --warn:#D9A458;
+  }
+  :root[data-theme="light"]{color-scheme:light}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  /* klavyeyle gezerken odaklanan öğe alttaki yapışkan çubuğun arkasında kalmasın */
+  html{scroll-padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+  body{background:var(--ground);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;padding:24px 16px 64px}
+  .wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+  /* üst çubuk: ana sayfaya dönüş + tema + dil */
+  .bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-bottom:6px}
+  .barlead{display:flex;align-items:center;gap:14px;min-width:0}
+  .back{font-size:.85rem;font-weight:600;color:var(--ink-2);text-decoration:none;white-space:nowrap}
+  .back:hover{color:var(--accent)}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+  .brand .mark{width:28px;height:28px;border-radius:7px;background:var(--accent);display:grid;place-items:center;flex:none}
+  .brand .mark svg{width:16px;height:16px}
+  /* Windows kontrast temalarında ikonun zemini ve çizgisi birlikte korunsun, çizgi kaybolmasın */
+  @media (forced-colors: active){.brand .mark{forced-color-adjust:none}}
+  .brand span{font-size:1.02rem;font-weight:700;letter-spacing:-.02em}
+  .brand small{font-family:var(--mono);font-size:.74rem;color:var(--ink-3);margin-left:6px;white-space:nowrap}
+  /* "/ foto-pdf" kırıntısı uzun: çubuk tek satıra sığmadığı her genişlikte gizli kalsın ki
+     çubuk bir tek, bir iki satır olmasın */
+  @media (max-width:500px){.brand small{display:none}}
+
+  header h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.02em}
+  header p{margin:0;color:var(--ink-2);font-size:.95rem}
+  .privacy{margin-top:10px;font-size:.85rem;color:var(--good);display:flex;gap:7px;align-items:baseline}
+
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:18px}
+
+  button,.btn{font:inherit;font-weight:600;font-size:.93rem;padding:10px 16px;border-radius:8px;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+  .btn{display:inline-grid;place-items:center;text-decoration:none;text-align:center}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.ghost{background:transparent;color:var(--ink-2);border-color:var(--rule)}
+  /* telefonda başparmakla basılan ana düğmeler */
+  .big{min-height:52px;width:100%;padding:12px 22px;font-size:1.02rem}
+  @media (min-width:600px){.big{width:auto;min-width:260px}}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+  /* bu sayfada sayaç ve ipuçları bilgi taşıyor ("12 / 48"): okunaklı olsun diye --ink-3 değil --ink-2 */
+  .count{font-family:var(--mono);font-size:.82rem;color:var(--ink-2)}
+  .hint{margin:0;font-size:.8rem;color:var(--ink-2)}
+  .msg{margin:0;font-size:.9rem;padding:10px 12px;border-radius:7px;background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);overflow-wrap:anywhere}
+  .msg.err{color:var(--warn)}
+
+  /* fotoğraf seçme alanı (masaüstünde sürükle-bırak hedefi) */
+  .pick{border:2px dashed var(--rule);border-radius:var(--radius);padding:22px 18px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:border-color .15s}
+  .pick.over{border-color:var(--accent)}
+  .pick p{margin:0}
+  .drophint{display:none;color:var(--ink-3);font-size:.9rem}
+  @media (hover:hover) and (pointer:fine){.drophint{display:block}}
+  input[type=file]{display:none}
+
+  /* küçük resim ızgarası — 360px ekranda iki sütun: 2 × 160 + boşluk = 328px.
+     Kenarlık yer kaplamasın diye gölgeyle çiziliyor; böylece dört düğmenin her biri tam 40px. */
+  .listhead{display:flex;align-items:center;gap:8px}
+  .grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+  @media (max-width:400px){.grid{gap:6px}}
+  .ph{min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:8px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--rule)}
+  .thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface-2)}
+  .thumb img{display:block;width:100%;height:100%;object-fit:contain;transition:transform .18s}
+  .no{position:absolute;top:6px;left:6px;min-width:26px;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-family:var(--mono);font-size:.76rem;font-weight:600;text-align:center}
+  .ctl{display:grid;grid-template-columns:repeat(4,minmax(40px,1fr))}
+  .ctl button{min-height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--ink-2);box-shadow:inset 0 1px 0 var(--rule)}
+  .ctl button + button{box-shadow:inset 0 1px 0 var(--rule), inset 1px 0 0 var(--rule)}
+  .ctl button:not(:disabled):hover{color:var(--accent);background:var(--surface-2)}
+  .ctl button:focus-visible{outline-offset:-3px}
+  /* simgeler SVG: ok ve çarpı karakterleri bazı telefonlarda renkli emoji olarak ya da hiç çizilmiyor */
+  .ctl svg{display:block;width:20px;height:20px;margin:auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  /* seçenekler: üçlü seçim düğmeleri */
+  .opts{display:flex;flex-direction:column;gap:16px}
+  fieldset.seg{border:0;margin:0;padding:0;min-width:0}
+  .seg legend{padding:0;margin-bottom:6px;font-size:.82rem;color:var(--ink-2);font-weight:600}
+  .seg .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .seg label{position:relative;display:block;cursor:pointer}
+  .seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+  .seg label span{display:grid;place-items:center;min-height:44px;padding:6px 8px;border:1px solid var(--rule);border-radius:8px;background:var(--surface-2);color:var(--ink-2);font-size:.88rem;font-weight:600;line-height:1.2;text-align:center}
+  .seg input:checked + span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .seg input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+  .seg input:disabled + span{opacity:.45}
+  .seg .hint{margin-top:6px}
+
+  /* alt çubuk: PDF oluştur → ilerleme → indir. Uzun listede ekranın altına yapışır. */
+  .gobar{position:sticky;bottom:0;z-index:5;display:flex;flex-direction:column;gap:10px;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--ground);border-top:1px solid var(--rule)}
+  .track{flex:1;min-width:120px;height:8px;border-radius:999px;background:var(--rule);overflow:hidden}
+  .fill{height:100%;width:0;background:var(--accent)}
+  .gobar .msg{max-height:4.8em;overflow:auto}       /* uzun dosya adları çubuğu ekranın yarısına büyütmesin */
+  .stat{margin:0;font-family:var(--mono);font-size:.9rem;color:var(--ink-2)}
+
+  .langbtn{padding:6px 11px;font-size:.8rem;background:transparent;color:var(--ink-2);border:1px solid var(--rule);border-radius:6px}
+  .barbtns{display:flex;gap:8px;margin-left:auto}
+  /* tema düğmesinin genişliği yazıya göre değişmesin: yoksa dar ekranda üst çubuk
+     bir tek, bir iki satır olup her basışta sayfa zıplıyor */
+  #theme{min-width:5.5em}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  [hidden]{display:none !important}
+  @media (prefers-reduced-motion: reduce){.thumb img{transition:none}}
+  /* Windows kontrast temaları zemin rengini ve gölgeyi siler: seçili seçenek, ilerleme ve kare sınırları görünür kalsın */
+  @media (forced-colors: active){
+    .ph{outline:1px solid CanvasText;outline-offset:-1px}
+    .ctl button{border-top:1px solid CanvasText}
+    .ctl button + button{border-left:1px solid CanvasText}
+    .seg input:checked + span{outline:3px solid Highlight;outline-offset:-3px}
+    .track{border:1px solid CanvasText}
+    .fill{background:Highlight}
+  }
+
+  /* diğer araçlar — kart stili index.html ile aynı */
+  .more{margin-top:28px}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:16px}
+  .section-head h2{margin:0;font-size:1.1rem;letter-spacing:-.02em}
+  .tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media (max-width:640px){.tools{grid-template-columns:1fr}}
+  a.tool{
+    display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+    background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);
+    padding:20px;text-decoration:none;color:inherit;transition:border-color .15s, transform .15s;
+  }
+  a.tool:hover{border-color:var(--accent);transform:translateY(-1px)}
+  a.tool .ico{width:44px;height:44px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center}
+  a.tool .ico svg{width:22px;height:22px;stroke:var(--accent)}
+  a.tool h3{margin:0 0 4px;font-size:1.05rem}
+  a.tool p{margin:0;font-size:.92rem;color:var(--ink-2)}
+  a.tool .go{display:block;margin-top:10px;font-family:var(--mono);font-size:.76rem;color:var(--accent)}
+  @media (prefers-reduced-motion: reduce){a.tool{transition:none}}
+  footer{color:var(--ink-3);font-size:.82rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="bar">
+    <div class="barlead">
+      <a class="back" href="./" data-t="back">← Araçlar</a>
+      <a class="brand" href="./">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
+        <span>NoUpload</span><small>/ foto-pdf</small>
+      </a>
+    </div>
+    <div class="barbtns">
+      <button class="langbtn" id="theme">Koyu</button>
+      <button class="langbtn" id="lang">English</button>
+    </div>
+  </div>
+
+  <header>
+    <h1 data-t="title">Fotoğraftan PDF</h1>
+    <p data-t="sub">Slayt, tahta ya da defter fotoğraflarını sıraya koy, tek bir PDF yap.</p>
+    <p class="privacy"><span>●</span> <span data-t="privacy">Fotoğrafların hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.</span></p>
+  </header>
+
+  <!-- ======================= 1) FOTOĞRAF SEÇME ======================= -->
+  <div class="pick" id="drop">
+    <button class="big" id="pick">Fotoğrafları seç</button>
+    <p class="drophint" data-t="dropHint">ya da fotoğrafları bu sayfaya sürükleyip bırak</p>
+    <p class="count" id="loadText" hidden></p>
+    <!-- capture yok: kamera açılmasın, galeriden seçilsin -->
+    <input type="file" id="file" accept="image/*" multiple>
+  </div>
+
+  <p class="msg err" id="warn" role="status" hidden></p>
+
+  <!-- ======================= 2) SIRALAMA ======================= -->
+  <section id="list" hidden>
+    <div class="listhead">
+      <span class="count" id="count"></span>
+      <span class="spacer"></span>
+      <button class="ghost" id="clear" data-t="clear">Temizle</button>
+    </div>
+    <p class="hint" data-t="orderHint" style="margin:6px 0 12px">Fotoğraflar çekim sırasına göre eklenir. Her karenin altındaki düğmelerle sırayı değiştirebilir, fotoğrafı döndürebilir ya da çıkarabilirsin.</p>
+    <ol class="grid" id="grid"></ol>
+  </section>
+
+  <!-- ======================= 3) SEÇENEKLER ======================= -->
+  <section class="card opts" id="opts" hidden>
+    <fieldset class="seg" id="setSize">
+      <legend data-t="sizeL">Sayfa boyutu</legend>
+      <div class="three">
+        <label><input type="radio" name="size" value="a4" checked><span data-t="sizeA4">A4</span></label>
+        <label><input type="radio" name="size" value="letter"><span data-t="sizeLetter">Letter</span></label>
+        <label><input type="radio" name="size" value="photo"><span data-t="sizePhoto">Fotoğraf boyutu</span></label>
+      </div>
+      <p class="hint" data-t="sizeHint">Sayfa yönü (dikey / yatay) her fotoğrafa göre otomatik seçilir.</p>
+    </fieldset>
+    <fieldset class="seg" id="setQuality">
+      <legend data-t="qualL">Kalite</legend>
+      <div class="three">
+        <label><input type="radio" name="quality" value="small"><span data-t="qSmall">Küçük dosya</span></label>
+        <label><input type="radio" name="quality" value="balanced" checked><span data-t="qBalanced">Dengeli</span></label>
+        <label><input type="radio" name="quality" value="high"><span data-t="qHigh">Yüksek</span></label>
+      </div>
+      <p class="hint" id="qualHint"></p>
+    </fieldset>
+  </section>
+
+  <!-- ======================= 4) OLUŞTUR / İLERLEME / İNDİR ======================= -->
+  <div class="gobar" id="goBar" hidden>
+    <div id="idle">
+      <button class="big" id="make" data-t="make">PDF oluştur</button>
+    </div>
+    <div class="actions" id="work" hidden>
+      <div class="track" id="track" role="progressbar" aria-valuemin="0" aria-labelledby="progText"><div class="fill" id="fill"></div></div>
+      <span class="count" id="progText">0 / 0</span>
+      <button class="ghost" id="cancel" data-t="cancel">İptal</button>
+    </div>
+    <div class="actions" id="done" hidden>
+      <p class="stat" id="resStat" role="status"></p>
+      <span class="spacer"></span>
+      <a class="btn big" id="dl" href="#" download="ders-notlari.pdf" aria-describedby="resStat" data-t="download">İndir</a>
+    </div>
+    <p class="msg err" id="goMsg" role="status" hidden></p>
+  </div>
+
+  <section class="more">
+    <div class="section-head">
+      <h2 data-t="moreH">Diğer araçlar</h2>
+    </div>
+    <div class="tools">
+      <a class="tool" href="pdf.html">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v14H8z"/><path d="M15 3v4h4"/><path d="M4 8v13h11"/><path d="M11 13h4M11 16h4"/></svg>
+        </span>
+        <div>
+          <h3 data-t="otherT">PDF Aracı</h3>
+          <p data-t="otherD">Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.</p>
+          <span class="go" data-t="otherGo">Aç →</span>
+        </div>
+      </a>
+      <a class="tool" href="foto.html">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+        </span>
+        <div>
+          <h3 data-t="other2T">Foto Küçültücü</h3>
+          <p data-t="other2D">Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.</p>
+          <span class="go" data-t="other2Go">Aç →</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <footer data-t="foot">Tek sayfa · sunucu yok · veri toplanmıyor</footer>
+</div>
+
+<script>
+/* ==================================================================
+   0) DİL
+   Tüm metinler burada. Yeni dil eklemek = bu nesneye bir anahtar
+   eklemek. Metinleri koda gömmek yerine burada tutmanın sebebi bu.
+================================================================== */
+const STR = {
+  tr:{
+    title:"Fotoğraftan PDF",
+    docTitle:"Fotoğraftan PDF — fotoğrafları tek PDF yap",
+    sub:"Slayt, tahta ya da defter fotoğraflarını sıraya koy, tek bir PDF yap.",
+    privacy:"Fotoğrafların hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.",
+    pick:"Fotoğrafları seç", pickMore:"Fotoğraf ekle",
+    dropHint:"ya da fotoğrafları bu sayfaya sürükleyip bırak",
+    clear:"Temizle",
+    orderHint:"Fotoğraflar çekim sırasına göre eklenir. Her karenin altındaki düğmelerle sırayı değiştirebilir, fotoğrafı döndürebilir ya da çıkarabilirsin.",
+    gridLabel:"Seçilen fotoğraflar",
+    up:"Bir öne al", down:"Bir sonraya al", rot:"90° döndür", del:"Çıkar",
+    sizeL:"Sayfa boyutu", sizeA4:"A4", sizeLetter:"Letter", sizePhoto:"Fotoğraf boyutu",
+    sizeHint:"Sayfa yönü (dikey / yatay) her fotoğrafa göre otomatik seçilir.",
+    qualL:"Kalite", qSmall:"Küçük dosya", qBalanced:"Dengeli", qHigh:"Yüksek",
+    make:"PDF oluştur", cancel:"İptal", download:"İndir",
+    fileName:"ders-notlari.pdf",
+    noneOk:"Fotoğrafların hiçbiri açılamadı, PDF oluşturulamadı.",
+    noLib:"PDF kütüphanesi yüklenemedi. İnternet bağlantını kontrol edip yeniden dene; seçtiğin fotoğraflar duruyor.",
+    fail:"PDF oluşturulurken bir sorun çıktı. Daha az fotoğrafla ya da “Küçük dosya” ile yeniden dene.",
+    foot:"Tek sayfa · sunucu yok · veri toplanmıyor",
+    lang:"English",
+    themeDark:"Koyu", themeLight:"Açık", themeSystem:"Sistem",
+    back:"← Araçlar", moreH:"Diğer araçlar",
+    otherT:"PDF Aracı", otherD:"Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.", otherGo:"Aç →",
+    other2T:"Foto Küçültücü", other2D:"Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.", other2Go:"Aç →",
+    locale:"tr-TR",
+    nPhotos:n=>`${n} fotoğraf`,
+    reading:(d,t)=>`Fotoğraflar okunuyor… ${d} / ${t}`,
+    skipped:(n,names)=>`${n} dosya açılamadı ve atlandı: ${names}`,
+    failed:(n,names)=>`${n} fotoğraf PDF'e eklenemedi: ${names}`,
+    qualHint:(edge,q)=>`En uzun kenar ${edge} px · JPEG %${q}`,
+    done:(p,size)=>`${p} sayfa · ${size}`
+  },
+  en:{
+    title:"Photos to PDF",
+    docTitle:"Photos to PDF — turn photos into one PDF",
+    sub:"Put photos of slides, whiteboards or notes in order and make a single PDF.",
+    privacy:"Your photos are never uploaded — everything runs in your browser.",
+    pick:"Choose photos", pickMore:"Add photos",
+    dropHint:"or drag and drop photos onto this page",
+    clear:"Clear",
+    orderHint:"Photos are added in the order they were taken. Use the buttons under each photo to reorder, rotate or remove it.",
+    gridLabel:"Selected photos",
+    up:"Move earlier", down:"Move later", rot:"Rotate 90°", del:"Remove",
+    sizeL:"Page size", sizeA4:"A4", sizeLetter:"Letter", sizePhoto:"Photo size",
+    sizeHint:"Page orientation (portrait / landscape) follows each photo automatically.",
+    qualL:"Quality", qSmall:"Small file", qBalanced:"Balanced", qHigh:"High",
+    make:"Create PDF", cancel:"Cancel", download:"Download",
+    fileName:"lecture-notes.pdf",
+    noneOk:"None of the photos could be opened, so no PDF was created.",
+    noLib:"The PDF library couldn't be loaded. Check your internet connection and try again; your photos are still here.",
+    fail:"Something went wrong while creating the PDF. Try again with fewer photos or with “Small file”.",
+    foot:"Single page · no server · no data collected",
+    lang:"Türkçe",
+    themeDark:"Dark", themeLight:"Light", themeSystem:"System",
+    back:"← Tools", moreH:"Other tools",
+    otherT:"PDF Tool", otherD:"Merge files, pick the pages you want as a new PDF, rotate pages.", otherGo:"Open →",
+    other2T:"Image Shrinker", other2D:"Resize a photo and push it under a target file size.", other2Go:"Open →",
+    locale:"en-US",
+    nPhotos:n=>`${n} photo${n===1?"":"s"}`,
+    reading:(d,t)=>`Reading photos… ${d} / ${t}`,
+    skipped:(n,names)=>`${n} file${n===1?"":"s"} couldn't be opened and ${n===1?"was":"were"} skipped: ${names}`,
+    failed:(n,names)=>`${n} photo${n===1?"":"s"} couldn't be added to the PDF: ${names}`,
+    qualHint:(edge,q)=>`Longest edge ${edge} px · JPEG ${q}%`,
+    done:(p,size)=>`${p} page${p===1?"":"s"} · ${size}`
+  }
+};
+let lang = "tr";
+const T = () => STR[lang];
+const el = id => document.getElementById(id);
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.title = T().docTitle;
+  document.querySelectorAll("[data-t]").forEach(n => {
+    const v = T()[n.dataset.t];
+    if (typeof v === "string") n.textContent = v;
+  });
+  el("lang").textContent = T().lang;
+  el("grid").setAttribute("aria-label", T().gridLabel);
+  paintThemeBtn();
+  paintTiles();
+  paint();
+}
+el("lang").addEventListener("click", () => { lang = lang === "tr" ? "en" : "tr"; applyLang(); });
+
+/* TEMA — üç durum: sistem (kayıt yok) / açık / koyu.
+   Düğme, dil düğmesi gibi tıklayınca ne olacağını yazar.
+   Sıra: sistem → sistemin tersi → sistemle aynı → sistem. */
+const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+const THEME_LABEL = {dark:"themeDark", light:"themeLight", system:"themeSystem"};
+const currentTheme = () => document.documentElement.getAttribute("data-theme") || "system";
+function nextTheme(t){
+  const os = darkMQ.matches ? "dark" : "light";
+  if (t === "system") return os === "dark" ? "light" : "dark";
+  return t === os ? "system" : os;
+}
+function setTheme(t){
+  if (t === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  try { t === "system" ? localStorage.removeItem("noupload-theme") : localStorage.setItem("noupload-theme", t); } catch(e){}
+  paintThemeBtn();
+}
+function paintThemeBtn(){ el("theme").textContent = T()[THEME_LABEL[nextTheme(currentTheme())]]; }
+el("theme").addEventListener("click", () => setTheme(nextTheme(currentTheme())));
+darkMQ.addEventListener("change", paintThemeBtn);
+
+/* ==================================================================
+   1) AYARLAR VE DURUM
+================================================================== */
+const PAGE = { a4:[595.28, 841.89], letter:[612, 792] };   // punto (1/72 inç), dikey
+const MARGIN = 18;                 // A4 / Letter'da küçük kenar boşluğu: 18 pt ≈ 6 mm
+const PHOTO_LONG = 841.89;         // "Fotoğraf boyutu": sayfa fotoğrafın oranında, uzun kenarı A4'ünki kadar
+const QUALITY = {                  // en uzun kenar (px) ve JPEG kalitesi
+  small:   { edge:1200, q:.7 },
+  balanced:{ edge:1800, q:.8 },
+  high:    { edge:2600, q:.9 }
+};
+const THUMB = 320;                 // küçük resmin en uzun kenarı (px)
+
+let items = [];                    // sıralı liste: { file, url (küçük resim), turns (90°'lik dönüş sayısı), node (<li>) }
+let skipped = [];                  // açılamadığı için atlanan dosya adları
+let loading = { done:0, total:0 }; // küçük resmi hazırlanan dosyalar
+let loadChain = Promise.resolve(); // dosyalar tek tek okunur; yeni seçimler kuyruğa eklenir
+let epoch = 0;                     // "Temizle" süren okumayı geçersiz kılar
+let busy = false, cancelled = false, startedAt = 0;
+let progress = { done:0, total:0 };
+let result = null;                 // { pages, size, failed[] }
+let pdfUrl = null;
+let goError = "";                  // STR anahtarı
+
+// Arayüze nefes aldır. setTimeout arka plana alınan sekmede saniyede bire yavaşlatılıyor;
+// MessageChannel yavaşlatılmıyor, öğrenci başka uygulamaya geçse de iş aynı hızda sürer.
+const tick = () => new Promise(r => {
+  const ch = new MessageChannel();
+  ch.port1.onmessage = () => { ch.port1.close(); r(); };
+  ch.port2.postMessage(0);
+});
+// Aynı metni yeniden yazma: role="status" alanları her çizimde baştan okunmasın
+const setText = (node, text) => { if (node.textContent !== text) node.textContent = text; };
+const optVal = name => document.querySelector(`input[name="${name}"]:checked`).value;
+
+function fmtSize(bytes){
+  const mb = bytes / 1048576;
+  return mb >= 1
+    ? mb.toLocaleString(T().locale, { minimumFractionDigits:1, maximumFractionDigits:1 }) + " MB"
+    : Math.max(1, Math.round(bytes / 1024)).toLocaleString(T().locale) + " KB";
+}
+function nameList(names){
+  const shown = names.slice(0, 3).join(", ");
+  return names.length > 3 ? `${shown} +${names.length - 3}` : shown;
+}
+
+/* ==================================================================
+   2) FOTOĞRAFI AÇMA
+   EXIF yönü createImageBitmap ile düzeltilir. Bazı eski Safari sürümleri
+   bu seçeneği tanımayıp hata verir; o zaman <img> ile açılır (tarayıcı
+   EXIF yönünü orada kendisi uygular). İkisi de açamazsa dosya atlanır.
+================================================================== */
+async function decode(file){
+  if (window.createImageBitmap){
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation:"from-image" });
+      return { src:bmp, w:bmp.width, h:bmp.height, close:() => bmp.close() };
+    } catch(e){}
+  }
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    if (!img.naturalWidth || !img.naturalHeight) throw new Error("boş görüntü");
+    return { src:img, w:img.naturalWidth, h:img.naturalHeight, close:() => { img.removeAttribute("src"); URL.revokeObjectURL(url); } };
+  } catch(e){
+    URL.revokeObjectURL(url);
+    throw e;
+  }
+}
+
+const IMAGE_EXT = /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif|tiff?)$/i;
+const looksLikeImage = f => f.type ? f.type.startsWith("image/") : IMAGE_EXT.test(f.name);
+
+// Küçük resim tek bir tuval üzerinde hazırlanır, ~15 KB'lık JPEG olarak saklanır;
+// fotoğrafın kendisi bellekte tutulmaz.
+const thumbCanvas = document.createElement("canvas");
+async function makeThumb(file){
+  const d = await decode(file);
+  try {
+    const k = Math.min(1, THUMB / Math.max(d.w, d.h));
+    thumbCanvas.width  = Math.max(1, Math.round(d.w * k));
+    thumbCanvas.height = Math.max(1, Math.round(d.h * k));
+    const c = thumbCanvas.getContext("2d");
+    c.fillStyle = "#fff";
+    c.fillRect(0, 0, thumbCanvas.width, thumbCanvas.height);
+    c.drawImage(d.src, 0, 0, thumbCanvas.width, thumbCanvas.height);
+  } finally { d.close(); }
+  const blob = await new Promise(r => thumbCanvas.toBlob(r, "image/jpeg", .7));
+  if (!blob) throw new Error("küçük resim üretilemedi");
+  return URL.createObjectURL(blob);
+}
+
+/* ==================================================================
+   3) SEÇME VE LİSTE
+================================================================== */
+function addFiles(fileList){
+  const files = [...fileList];
+  if (busy || !files.length) return;
+  // Çekim sırası: değiştirilme tarihi artan; aynıysa ada göre (IMG_0099 < IMG_0100)
+  files.sort((a, b) => (a.lastModified - b.lastModified) || a.name.localeCompare(b.name, undefined, { numeric:true }));
+  if (!loading.total) skipped = [];
+  loading.total += files.length;
+  paint();
+  const mine = epoch;
+  loadChain = loadChain.then(() => readBatch(files, mine));
+}
+
+async function readBatch(files, mine){
+  for (const file of files){
+    if (mine !== epoch) return;
+    let url = null;
+    if (looksLikeImage(file)){
+      try { url = await makeThumb(file); } catch(e){}
+    }
+    if (mine !== epoch){ if (url) URL.revokeObjectURL(url); return; }
+    if (url){ invalidate(); addTile({ file, url, turns:0, node:null }); }   // liste değişti: eski PDF geçersiz
+    else skipped.push(file.name);
+    loading.done++;
+    if (loading.done >= loading.total) loading = { done:0, total:0 };
+    paintTiles();
+    paint();
+    await tick();
+  }
+}
+
+// Kare düğmeleri: bir öne al, bir sonraya al, 90° sağa döndür, çıkar
+const ICON = {
+  up:  '<path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>',
+  down:'<path d="M12 5v14"/><path d="M5 12l7 7 7-7"/>',
+  rot: '<path d="M23 4v6h-6"/><path d="M20.5 15a9 9 0 1 1-2.1-9.4L23 10"/>',
+  del: '<path d="M6 6l12 12"/><path d="M18 6L6 18"/>'
+};
+function addTile(it){
+  const li = document.createElement("li");
+  li.className = "ph";
+  const thumb = document.createElement("div");
+  thumb.className = "thumb";
+  const img = document.createElement("img");
+  img.alt = it.file.name;
+  img.decoding = "async";
+  img.src = it.url;
+  const no = document.createElement("span");
+  no.className = "no";
+  thumb.append(img, no);
+  const ctl = document.createElement("div");
+  ctl.className = "ctl";
+  Object.keys(ICON).forEach(act => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.act = act;
+    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[act]}</svg>`;   // sabit metin, kullanıcı verisi yok
+    ctl.append(b);
+  });
+  li.append(thumb, ctl);
+  it.node = li;
+  items.push(it);
+  el("grid").append(li);
+}
+
+// Sıra numaraları, düğme adları ve hangi düğmenin basılabilir olduğu
+function paintTiles(){
+  items.forEach((it, i) => {
+    it.node.querySelector(".no").textContent = i + 1;
+    it.node.querySelectorAll("button").forEach(b => {
+      const act = b.dataset.act;
+      b.title = T()[act];
+      b.setAttribute("aria-label", `${i + 1}: ${T()[act]}`);
+      b.disabled = busy || (act === "up" && i === 0) || (act === "down" && i === items.length - 1);
+    });
+  });
+}
+
+el("grid").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b || busy) return;
+  const li = b.closest("li");
+  const i = items.findIndex(it => it.node === li);
+  if (i < 0) return;
+  const act = b.dataset.act, grid = el("grid");
+  if (act === "up" && i > 0){
+    // Basılan karenin yerine komşusu taşınır: basılan düğme odağını kaybetmez
+    grid.insertBefore(items[i - 1].node, li.nextSibling);
+    [items[i - 1], items[i]] = [items[i], items[i - 1]];
+  } else if (act === "down" && i < items.length - 1){
+    grid.insertBefore(items[i + 1].node, li);
+    [items[i + 1], items[i]] = [items[i], items[i + 1]];
+  } else if (act === "rot"){
+    items[i].turns++;                      // hep saat yönünde dönsün diye mod almadan saklanır
+    li.querySelector("img").style.transform = `rotate(${items[i].turns * 90}deg)`;
+  } else if (act === "del"){
+    URL.revokeObjectURL(items[i].url);
+    items.splice(i, 1);
+    li.remove();
+  } else return;
+  invalidate();
+  paintTiles();
+  paint();
+  // Klavye odağı kaybolmasın: düğme artık basılamıyorsa ya da kare silindiyse en yakın düğmeye geç
+  if (act === "del"){
+    const near = items[Math.min(i, items.length - 1)];
+    (near ? near.node.querySelector('[data-act="del"]') : el("pick")).focus();
+  } else if (b.disabled){
+    li.querySelector(act === "up" ? '[data-act="down"]' : '[data-act="up"]').focus();
+  }
+});
+
+el("clear").addEventListener("click", () => {
+  if (busy) return;
+  epoch++;
+  items.forEach(it => URL.revokeObjectURL(it.url));
+  items = []; skipped = []; loading = { done:0, total:0 };
+  el("grid").textContent = "";
+  el("file").value = "";
+  invalidate();
+  paint();
+  el("pick").focus();
+});
+
+el("pick").addEventListener("click", () => el("file").click());
+el("file").addEventListener("change", () => { addFiles(el("file").files); el("file").value = ""; });
+
+// Sürükle-bırak: sayfanın neresine bırakılırsa bırakılsın alınır (masaüstü)
+const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes("Files");
+let dragDepth = 0;
+document.addEventListener("dragenter", e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; el("drop").classList.add("over"); });
+document.addEventListener("dragover",  e => { if (hasFiles(e)) e.preventDefault(); });
+document.addEventListener("dragleave", e => { if (!hasFiles(e)) return; if (--dragDepth <= 0){ dragDepth = 0; el("drop").classList.remove("over"); } });
+document.addEventListener("drop", e => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dragDepth = 0;
+  el("drop").classList.remove("over");
+  addFiles(e.dataTransfer.files);
+});
+
+document.querySelectorAll('input[name="size"], input[name="quality"]').forEach(r =>
+  r.addEventListener("change", () => { invalidate(); paint(); }));
+
+/* ==================================================================
+   4) PDF ÜRETİMİ
+   Fotoğraflar tek tek işlenir: aç → tuvalde küçült/döndür → JPEG → PDF'e
+   göm → kapat. Aynı anda yalnızca bir fotoğraf açık durur; bellekte biriken
+   tek şey küçültülmüş JPEG'lerdir. 100+ fotoğrafta telefonu bu korur.
+================================================================== */
+const pageCanvas = document.createElement("canvas");
+
+async function toJpeg(it, ql){
+  const d = await decode(it.file);
+  let w, h;
+  try {
+    const k = Math.min(1, ql.edge / Math.max(d.w, d.h));            // büyütme yok
+    const sw = Math.max(1, Math.round(d.w * k)), sh = Math.max(1, Math.round(d.h * k));
+    const quarter = it.turns % 4;
+    w = quarter % 2 ? sh : sw;
+    h = quarter % 2 ? sw : sh;
+    pageCanvas.width = w; pageCanvas.height = h;                     // boyut atamak tuvali de sıfırlar
+    const c = pageCanvas.getContext("2d");
+    c.fillStyle = "#fff";                                            // saydam PNG'ler siyah çıkmasın
+    c.fillRect(0, 0, w, h);
+    c.imageSmoothingQuality = "high";
+    c.translate(w / 2, h / 2);
+    c.rotate(quarter * Math.PI / 2);
+    c.drawImage(d.src, -sw / 2, -sh / 2, sw, sh);
+  } finally { d.close(); }
+  const blob = await new Promise(r => pageCanvas.toBlob(r, "image/jpeg", ql.q));
+  if (!blob) throw new Error("JPEG üretilemedi");
+  return { bytes:new Uint8Array(await blob.arrayBuffer()), w, h };
+}
+
+// Sayfa ölçüsü ve fotoğrafın sayfadaki yeri (punto). Yatay fotoğraf → yatay sayfa.
+function layout(size, w, h){
+  if (size === "photo"){
+    const k = PHOTO_LONG / Math.max(w, h);
+    return { pw:w * k, ph:h * k, x:0, y:0, iw:w * k, ih:h * k };
+  }
+  let [pw, ph] = PAGE[size];
+  if (w > h) [pw, ph] = [ph, pw];
+  const k = Math.min((pw - 2 * MARGIN) / w, (ph - 2 * MARGIN) / h);   // sığdır (contain)
+  const iw = w * k, ih = h * k;
+  return { pw, ph, x:(pw - iw) / 2, y:(ph - ih) / 2, iw, ih };        // ortala
+}
+
+// Sayfa açılırken pdf-lib yüklenemediyse (bağlantı koptuysa) burada yeniden denenir;
+// böylece sayfayı yenileyip seçilen ve sıralanan fotoğrafları kaybetmek gerekmez.
+function loadLib(){
+  if (window.PDFLib) return Promise.resolve();
+  return new Promise((ok, fail) => {
+    const tag = document.createElement("script");
+    tag.src = el("pdflib").src;
+    tag.onload = () => window.PDFLib ? ok() : fail(new Error("pdf-lib"));
+    tag.onerror = () => { tag.remove(); fail(new Error("pdf-lib")); };
+    document.head.append(tag);
+  });
+}
+
+async function makePdf(){
+  if (busy || !items.length || loading.total) return;
+  invalidate();
+  busy = true; cancelled = false; startedAt = performance.now();
+  const list = items.slice();
+  const size = optVal("size"), ql = QUALITY[optVal("quality")];
+  const failed = [];
+  progress = { done:0, total:list.length };
+  // "PDF oluştur" gizlenince klavye odağı boşa düşmesin (gizlenen düğme bir süre daha odaklı görünür, o yüzden önceden bakılıyor)
+  const hadFocus = el("goBar").contains(document.activeElement);
+  paintTiles();
+  paint();
+  if (hadFocus) el("cancel").focus({ preventScroll:true });
+  try {
+    try { await loadLib(); } catch(e){ goError = "noLib"; return; }
+    let doc = await PDFLib.PDFDocument.create();
+    for (const it of list){
+      if (cancelled) break;
+      try {
+        const jpg = await toJpeg(it, ql);
+        const image = await doc.embedJpg(jpg.bytes);
+        const L = layout(size, jpg.w, jpg.h);
+        doc.addPage([L.pw, L.ph]).drawImage(image, { x:L.x, y:L.y, width:L.iw, height:L.ih });
+      } catch(e){
+        failed.push(it.file.name);
+      }
+      progress.done++;
+      paint();
+      await tick();
+    }
+    if (!cancelled){
+      const pages = doc.getPageCount();
+      if (!pages) goError = "noneOk";
+      else {
+        const bytes = await doc.save();
+        doc = null;
+        if (!cancelled){                                   // kaydetme sürerken basılan İptal de geçerli
+          const blob = new Blob([bytes], { type:"application/pdf" });
+          pdfUrl = URL.createObjectURL(blob);
+          result = { pages, size:blob.size, failed };
+        }
+      }
+    }
+  } catch(e){
+    goError = "fail";
+  } finally {
+    pageCanvas.width = pageCanvas.height = 0;     // tuvalin belleğini bırak
+    busy = false;
+    paintTiles();
+    paint();
+    // odak çubuğun içindeyse ya da boşa düştüyse: bitince "İndir"e, iptal/hata sonrası "PDF oluştur"a
+    const at = document.activeElement;
+    if (at === document.body || el("goBar").contains(at)) (result ? el("dl") : el("make")).focus({ preventScroll:true });
+  }
+}
+el("make").addEventListener("click", makePdf);
+// İlk yarım saniyedeki basış sayılmaz: "PDF oluştur"a çift dokunuş işi yanlışlıkla iptal etmesin
+el("cancel").addEventListener("click", () => { if (performance.now() - startedAt > 500) cancelled = true; });
+
+// Liste ya da seçenek değişince eski PDF geçersiz olur
+function invalidate(){
+  if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+  pdfUrl = null; result = null; goError = "";
+}
+
+/* ==================================================================
+   5) EKRANI DURUMA GÖRE ÇİZ
+================================================================== */
+function paint(){
+  const n = items.length, reading = loading.total > 0;
+  setText(el("pick"), n ? T().pickMore : T().pick);
+  el("pick").disabled = busy;
+  el("loadText").hidden = !reading;
+  if (reading) setText(el("loadText"), T().reading(loading.done, loading.total));
+  el("warn").hidden = !skipped.length;
+  if (skipped.length) setText(el("warn"), T().skipped(skipped.length, nameList(skipped)));
+
+  el("list").hidden = el("opts").hidden = el("goBar").hidden = !n;
+  setText(el("count"), T().nPhotos(n));
+  el("clear").disabled = busy;
+  el("setSize").disabled = el("setQuality").disabled = busy;
+  const ql = QUALITY[optVal("quality")];
+  setText(el("qualHint"), T().qualHint(ql.edge, Math.round(ql.q * 100)));
+
+  const state = busy ? "work" : result ? "done" : "idle";
+  el("idle").hidden = state !== "idle";
+  el("work").hidden = state !== "work";
+  el("done").hidden = state !== "done";
+  el("make").disabled = reading;
+  // okuma sürerken düğme neden basılamadığını söylesin (okuma yazısı sayfanın en üstünde, görünmüyor olabilir)
+  setText(el("make"), reading ? T().reading(loading.done, loading.total) : T().make);
+  if (state === "work"){
+    // o an işlenen fotoğrafın sırası: "12 / 48"
+    setText(el("progText"), `${Math.min(progress.done + 1, progress.total)} / ${progress.total}`);
+    el("fill").style.width = (progress.total ? progress.done / progress.total * 100 : 0) + "%";
+    el("track").setAttribute("aria-valuemax", progress.total);
+    el("track").setAttribute("aria-valuenow", progress.done);
+  }
+  if (state === "done"){
+    setText(el("resStat"), T().done(result.pages, fmtSize(result.size)));
+    el("dl").href = pdfUrl;
+    el("dl").download = T().fileName;
+  }
+  const failed = result ? result.failed : [];
+  const text = goError ? T()[goError] : failed.length ? T().failed(failed.length, nameList(failed)) : "";
+  el("goMsg").hidden = !text;
+  setText(el("goMsg"), text);
+}
+
+applyLang();
+</script>
+</body>
+</html>

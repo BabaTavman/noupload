@@ -231,6 +231,16 @@
           <span class="go" data-t="otherGo">Aç →</span>
         </div>
       </a>
+      <a class="tool" href="foto-pdf.html">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
+        </span>
+        <div>
+          <h3 data-t="other2T">Fotoğraftan PDF</h3>
+          <p data-t="other2D">Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
+          <span class="go" data-t="other2Go">Aç →</span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -260,6 +270,7 @@ const STR = {
     themeDark:"Koyu", themeLight:"Açık", themeSystem:"Sistem",
     back:"← Araçlar", moreH:"Diğer araçlar",
     otherT:"Foto Küçültücü", otherD:"Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.", otherGo:"Aç →",
+    other2T:"Fotoğraftan PDF", other2D:"Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.", other2Go:"Aç →",
     nFiles:n=>`${n} dosya · ${n>1?"sıra yukarıdaki gibi":"tek dosya"}`,
     nPages:(s,t)=>`${t} sayfadan ${s} tanesi seçili`,
     merged:n=>`${n} dosya birleştirildi ve indirildi.`,
@@ -285,6 +296,7 @@ const STR = {
     themeDark:"Dark", themeLight:"Light", themeSystem:"System",
     back:"← Tools", moreH:"Other tools",
     otherT:"Image Shrinker", otherD:"Resize a photo and push it under a target file size.", otherGo:"Open →",
+    other2T:"Photos to PDF", other2D:"Put your slide and whiteboard photos in order and turn them into a single PDF.", other2Go:"Open →",
     nFiles:n=>`${n} file${n>1?"s":""} · order as listed above`,
     nPages:(s,t)=>`${s} of ${t} pages selected`,
     merged:n=>`Merged ${n} files and downloaded.`,
