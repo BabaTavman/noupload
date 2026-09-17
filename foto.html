@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Foto Küçültücü — hedef boyuta indir</title>
+<script>
+  /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
+     Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
+  try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
+</script>
 <style>
   /* ---------------------------------------------------------------
      RENKLER
@@ -25,13 +30,23 @@
     --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
     --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
   }
+  /* Koyu renkler iki yerde: sistem koyuysa (kullanıcı "açık" seçmediyse)
+     ve kullanıcı "koyu" seçtiyse. İkisi aynı kalmalı. */
   @media (prefers-color-scheme: dark){
-    :root{
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
       --ground:#101A21; --surface:#18242D; --ink:#E6EDF2; --ink-2:#AEC1CC;
       --ink-3:#7C929F; --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
       --good:#67B089; --warn:#D9A458;
     }
   }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --ground:#101A21; --surface:#18242D; --ink:#E6EDF2; --ink-2:#AEC1CC;
+    --ink-3:#7C929F; --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
+    --good:#67B089; --warn:#D9A458;
+  }
+  :root[data-theme="light"]{color-scheme:light}
 
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -94,6 +109,7 @@
   }
   button:disabled{opacity:.45;cursor:not-allowed}
   button.ghost{background:transparent;color:var(--ink-2);border-color:var(--rule)}
+  .langbtn{padding:6px 11px;font-size:.8rem;background:transparent;color:var(--ink-2);border:1px solid var(--rule);border-radius:6px}
 
   /* --- sonuç --- */
   .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -118,6 +134,7 @@
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
       <span>NoUpload</span><small>/ foto</small>
     </a>
+    <button class="langbtn" id="theme">Koyu</button>
   </div>
 
   <header>
@@ -329,6 +346,37 @@ el("reset").addEventListener("click", () => {
   sourceFile = null; outputBlob = null; fileInput.value = "";
   controls.hidden = true; result.hidden = true;
 });
+
+/* =================================================================
+   TEMA — üç durum: sistem (kayıt yok) / açık / koyu.
+   Düğme tıklayınca ne olacağını yazar.
+   Sıra: sistem → sistemin tersi → sistemle aynı → sistem.
+   Bu sayfada henüz dil düğmesi yok; metinler diğer sayfalardaki gibi
+   iki dilde duruyor, sayfanın dili (<html lang>) hangisiyse o kullanılıyor.
+================================================================== */
+const STR = {
+  tr:{themeDark:"Koyu", themeLight:"Açık", themeSystem:"Sistem"},
+  en:{themeDark:"Dark", themeLight:"Light", themeSystem:"System"}
+};
+const T = () => STR[document.documentElement.lang] || STR.tr;
+const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+const THEME_LABEL = {dark:"themeDark", light:"themeLight", system:"themeSystem"};
+const currentTheme = () => document.documentElement.getAttribute("data-theme") || "system";
+function nextTheme(t){
+  const os = darkMQ.matches ? "dark" : "light";
+  if (t === "system") return os === "dark" ? "light" : "dark";
+  return t === os ? "system" : os;
+}
+function setTheme(t){
+  if (t === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  try { t === "system" ? localStorage.removeItem("noupload-theme") : localStorage.setItem("noupload-theme", t); } catch(e){}
+  paintThemeBtn();
+}
+function paintThemeBtn(){ el("theme").textContent = T()[THEME_LABEL[nextTheme(currentTheme())]]; }
+el("theme").addEventListener("click", () => setTheme(nextTheme(currentTheme())));
+darkMQ.addEventListener("change", paintThemeBtn);
+paintThemeBtn();
 </script>
 </body>
 </html>

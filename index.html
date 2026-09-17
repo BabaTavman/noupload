@@ -7,6 +7,11 @@
 <meta name="description" content="PDF ve görsel araçları. Dosyanız sunucuya yüklenmez, her şey tarayıcınızda çalışır.">
 <meta name="theme-color" content="#17607F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317607F'/%3E%3Cpath d='M10 7h8l5 5v13H10z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M18 7v5h5' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 19h9' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+  /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
+     Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
+  try{var t=localStorage.getItem("noupload-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
+</script>
 <style>
   /* ------------------------------------------------------------------
      RENKLER — tek kaynak. Araç sayfaları da aynı isimleri kullanıyor.
@@ -21,8 +26,11 @@
     --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
     --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
   }
+  /* Koyu renkler iki yerde: sistem koyuysa (kullanıcı "açık" seçmediyse)
+     ve kullanıcı "koyu" seçtiyse. İkisi aynı kalmalı. */
   @media (prefers-color-scheme: dark){
-    :root{
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
       --ground:#0F181F; --surface:#17232C; --surface-2:#1C2A34;
       --ink:#E6EDF2; --ink-2:#AEC1CC; --ink-3:#7C929F;
       --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
@@ -30,6 +38,15 @@
       --dot:rgba(230,237,242,.06);
     }
   }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --ground:#0F181F; --surface:#17232C; --surface-2:#1C2A34;
+    --ink:#E6EDF2; --ink-2:#AEC1CC; --ink-3:#7C929F;
+    --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
+    --accent-soft:#1B3441; --good:#67B089; --bad:#D08C85;
+    --dot:rgba(230,237,242,.06);
+  }
+  :root[data-theme="light"]{color-scheme:light}
 
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -54,6 +71,7 @@
   .brand span{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
   .langbtn{padding:7px 12px;font:inherit;font-size:.82rem;font-weight:600;background:var(--surface);color:var(--ink-2);border:1px solid var(--rule);border-radius:8px;cursor:pointer}
   .langbtn:hover{border-color:var(--accent)}
+  .barbtns{display:flex;gap:8px}
 
   /* ---------- giriş: iki sütun ---------- */
   .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
@@ -114,7 +132,10 @@
       </span>
       <span data-t="brand">NoUpload</span>
     </a>
-    <button class="langbtn" id="lang">English</button>
+    <div class="barbtns">
+      <button class="langbtn" id="theme">Koyu</button>
+      <button class="langbtn" id="lang">English</button>
+    </div>
   </div>
 
   <section class="hero">
@@ -270,7 +291,8 @@ const STR = {
     why1:"Dosyanız onların makinesine gider, orada işlenir, size geri gönderilir. Sonra “birkaç saat içinde siliyoruz” derler. Sözleşme, bordro ya da kimlik taramasıysa bu söze güvenmek zorundasınız.",
     why2:"Güvenmeniz gereken bir söz yok. Sunucumuz yok. Bütün işlem sizin tarayıcınızda yapılıyor, dosya ağa hiç çıkmıyor — bunu internet bağlantınızı keserek kendiniz doğrulayabilirsiniz.",
     foot:"Sunucu yok · hesap yok · veri toplanmıyor", src:"Kaynak kodu açık",
-    lang:"English"
+    lang:"English",
+    themeDark:"Koyu", themeLight:"Açık", themeSystem:"Sistem"
   },
   en:{
     brand:"NoUpload",
@@ -291,7 +313,8 @@ const STR = {
     why1:"Your file travels to their machine, gets processed there and is sent back. Then they promise to delete it “within a few hours.” For a contract, a payslip or an ID scan, you have to take that on trust.",
     why2:"There is no promise to trust. There is no server. Everything happens in your own browser and the file never touches the network — you can verify this yourself by turning off your internet.",
     foot:"No server · no account · no tracking", src:"Source code is public",
-    lang:"Türkçe"
+    lang:"Türkçe",
+    themeDark:"Dark", themeLight:"Light", themeSystem:"System"
   }
 };
 
@@ -304,8 +327,31 @@ function applyLang(){
     if (v) n.textContent = v;
   });
   el("lang").textContent = STR[lang].lang;
+  paintThemeBtn();
 }
 el("lang").addEventListener("click", () => { lang = lang === "tr" ? "en" : "tr"; applyLang(); });
+
+/* TEMA — üç durum: sistem (kayıt yok) / açık / koyu.
+   Düğme, dil düğmesi gibi tıklayınca ne olacağını yazar.
+   Sıra: sistem → sistemin tersi → sistemle aynı → sistem. */
+const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+const THEME_LABEL = {dark:"themeDark", light:"themeLight", system:"themeSystem"};
+const currentTheme = () => document.documentElement.getAttribute("data-theme") || "system";
+function nextTheme(t){
+  const os = darkMQ.matches ? "dark" : "light";
+  if (t === "system") return os === "dark" ? "light" : "dark";
+  return t === os ? "system" : os;
+}
+function setTheme(t){
+  if (t === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  try { t === "system" ? localStorage.removeItem("noupload-theme") : localStorage.setItem("noupload-theme", t); } catch(e){}
+  paintThemeBtn();
+}
+function paintThemeBtn(){ el("theme").textContent = STR[lang][THEME_LABEL[nextTheme(currentTheme())]]; }
+el("theme").addEventListener("click", () => setTheme(nextTheme(currentTheme())));
+darkMQ.addEventListener("change", paintThemeBtn);
+
 applyLang();
 </script>
 </body>
