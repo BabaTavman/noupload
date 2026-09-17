@@ -1,3 +1,6 @@
-# Kütüphane ve yazı tipi dosyaları bayt bayt korunsun: Windows'ta satır sonu dönüştürülmesin
+# Çalışma kopyasında satır sonları her makinede LF: Windows'ta git dosyaları CRLF'ye çevirince üretilmiş sayfalar
+# depodakinden farklı görünüyor, "npm test" (seo) temiz bir kopyada boş yere kırmızıya dönüyordu
+* text=auto eol=lf
+# Kütüphane ve yazı tipi dosyaları bayt bayt korunsun: satır sonu dönüştürülmesin
 lib/*.js -text
 assets/fonts/*.woff2 binary
