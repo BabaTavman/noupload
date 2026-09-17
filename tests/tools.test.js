@@ -8,7 +8,7 @@
 ================================================================== */
 "use strict";
 const fs = require("fs"), path = require("path");
-const { launch, reporter, config, prefix, i18n, fill, FX } = require("./harness.js");
+const { launch, reporter, CONTRAST_AUDIT, config, prefix, i18n, fill, FX } = require("./harness.js");
 const { ensureFixtures } = require("./fixtures.js");
 const LANGS = config.langs;
 const I18N = Object.fromEntries(LANGS.map(l => [l, i18n(l)]));
@@ -22,6 +22,8 @@ const PDFINFO = `(async href => { const d = await PDFLib.PDFDocument.load(await 
   await ensureFixtures();
   const b = await launch(); const { ev, go, reload, os, size, mobile, click, setFiles, waitUntil, sleep } = b;
   await os("light"); await size(1200);
+  // araç kullanılırken görünen metinler (mesaj, sayaç, liste, sonuç) de kontrast denetiminden geçer; iki tema yerinde denenir (renk geçişi yok)
+  const audit = async name => { for (const th of ["light", "dark"]) { await ev(`document.documentElement.setAttribute("data-theme", "${th}")`); check(`${name} [${th}] · metin kontrastı`, await ev(CONTRAST_AUDIT), []); } await ev(`document.documentElement.removeAttribute("data-theme")`); };
   const A = path.join(FX, "pdf", "A-uc-sayfa.pdf"), B = path.join(FX, "pdf", "B-iki-sayfa.pdf"), BAD = path.join(FX, "pdf", "bozuk.pdf");
 
   /* ---------- P. pdf.html ---------- */
@@ -40,6 +42,12 @@ const PDFINFO = `(async href => { const d = await PDFLib.PDFDocument.load(await 
     await click("#mergeGo"); await waitUntil(`document.getElementById("msgM").className.includes("ok")`);
     let d = await ev(`window.__dl.at(-1)`);
     check(`${tag} · birleştir: mesaj, dosya adı, sayfalar A sonra B`, [await ev(`document.getElementById("msgM").textContent`), d.name, await ev(`${PDFINFO}(${JSON.stringify(d.href)})`)], [fill(S.merged, { n: 2 }), S.mergedName, [[200, 300, 0], [210, 310, 0], [220, 320, 0], [400, 200, 0], [410, 210, 0]]]);
+    await audit(`${tag} · birleştirildi`);
+    { // dokunmatik telefon: sıra düğmeleri parmağa göre (≥ 40px), dosya adına yer kalıyor, taşma yok
+      await mobile(360, 800); await b.touch(true);
+      check(`${tag} · dokunmatik 360px: ↑ ↓ ✕ en az 40px, dosya adı sığıyor, taşma yok`, await ev(`(() => { const q = [...document.querySelectorAll("#listM .mini button")].map(x => x.getBoundingClientRect()); const nm = document.querySelector("#listM .nm");
+        return [Math.min(...q.map(r => Math.min(r.width, r.height))) >= 40, nm.scrollWidth <= nm.clientWidth, document.documentElement.scrollWidth > document.documentElement.clientWidth]; })()`), [true, true, false]);
+      await b.touch(false); await size(1200); }
     await click("#listM li:first-child [data-down]"); await click("#mergeGo"); await waitUntil(`window.__dl.length === 2`);
     d = await ev(`window.__dl.at(-1)`);
     check(`${tag} · ↓ ile sıra değişince B sonra A`, (await ev(`${PDFINFO}(${JSON.stringify(d.href)})`)).map(p => p[0]), [400, 410, 200, 210, 220]);
@@ -50,7 +58,13 @@ const PDFINFO = `(async href => { const d = await PDFLib.PDFDocument.load(await 
     await setFiles("#fileP", [A]); await waitUntil(`document.querySelectorAll("#gridP .pg canvas").length === 3`, 20000);
     check(`${tag} · sayfa seç: 3 küçük resim çizildi (pdf.js), sayaç`, await ev(`(() => { const cs = [...document.querySelectorAll("#gridP canvas")]; const painted = cs.map(c => { const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; for (let i = 0; i < d.length; i += 4) if (d[i] < 200) return true; return false; }); return [painted, document.getElementById("countP").textContent, document.getElementById("paneMerge").hidden]; })()`), [[true, true, true], fill(S.nPages, { sel: 3, total: 3, n: 3 }), true]);
     await click("#gridP .pg:nth-child(2)");
+    { // Windows kontrast teması: dolgu renkleri silinir; seçili sekme ve seçili sayfa kenarlık kalınlığıyla ayrılmalı
+      await b.send("Emulation.setEmulatedMedia", { features: [{ name: "forced-colors", value: "active" }, { name: "prefers-color-scheme", value: "light" }] });
+      const bw = s => `parseFloat(getComputedStyle(document.querySelector('${s}')).borderTopWidth)`;
+      check(`${tag} · kontrast temasında seçili sekme ve seçili sayfa kalın kenarlıkla ayrılıyor`, await ev(`[${bw('.tab[aria-selected="true"]')} - ${bw('.tab[aria-selected="false"]')} >= 2, ${bw("#gridP .pg.sel")} - ${bw("#gridP .pg:not(.sel)")} >= 2]`), [true, true]);
+      await os("light"); }
     check(`${tag} · sayfaya tıklayınca seçim kalkar`, await ev(`[document.getElementById("countP").textContent, document.querySelector("#gridP .pg:nth-child(2)").classList.contains("sel")]`), [fill(S.nPages, { sel: 2, total: 3, n: 3 }), false]);
+    await audit(`${tag} · sayfa seç`);
     await click("#rot"); await click("#pagesGo"); await waitUntil(`document.getElementById("msgP").className.includes("ok")`);
     d = await ev(`window.__dl.at(-1)`);
     check(`${tag} · seçilenlerden PDF: 1. ve 3. sayfa, 90° dönmüş; mesaj ve dosya adı`, [await ev(`${PDFINFO}(${JSON.stringify(d.href)})`), await ev(`document.getElementById("msgP").textContent`), d.name], [[[200, 300, 90], [220, 320, 90]], fill(S.made, { n: 2 }), S.pagesName]);
@@ -60,15 +74,19 @@ const PDFINFO = `(async href => { const d = await PDFLib.PDFDocument.load(await 
     check(`${tag} · hiç sayfa seçili değilken uyarı`, await ev(`[document.getElementById("countP").textContent, document.getElementById("msgP").textContent]`), [fill(S.nPages, { sel: 0, total: 3, n: 3 }), S.pickOne]);
     await setFiles("#fileP", [BAD]); await waitUntil(`document.getElementById("msgP").textContent === ${JSON.stringify(S.bad)}`);
     check(`${tag} · bozuk dosyada anlaşılır hata`, await ev(`document.getElementById("msgP").className`), "msg err");
+    await audit(`${tag} · bozuk dosya`);
+    // ilk seçilen dosya bozuksa da mesaj görünmeli (mesaj, o ana dek gizli duran kartın içinde)
+    await reload(); await ev(HOOK); await click("#tabPages"); await setFiles("#fileP", [BAD]); await waitUntil(`document.getElementById("msgP").textContent === ${JSON.stringify(S.bad)}`);
+    check(`${tag} · ilk dosya bozuksa hata ekranda görünüyor`, await ev(`(() => { const q = document.getElementById("msgP").getBoundingClientRect(); return q.width > 0 && q.height > 0; })()`), true);
   }
 
   /* ---------- F. foto.html ---------- */
   if (section("F")) for (const l of LANGS) {
     const S = I18N[l].foto, page = prefix(l) + "foto.html", tag = `F ${page}`;
     await go(page); await ev(`localStorage.clear()`); await reload(); await ev(HOOK);
-    check(`${tag} · sabit metinler`, await ev(`[document.documentElement.lang, document.title, document.querySelector("h1").textContent, document.querySelector("header p").textContent, document.querySelector(".privacy span:last-child").textContent, document.getElementById("drop").getAttribute("aria-label"), document.querySelector("#drop strong").textContent, document.querySelector("#drop span").textContent,
+    check(`${tag} · sabit metinler`, await ev(`[document.documentElement.lang, document.title, document.querySelector("h1").textContent, document.querySelector("header p").textContent, document.querySelector(".localnote").textContent, document.getElementById("drop").getAttribute("aria-label"), document.querySelector("#drop strong").textContent, document.querySelector("#drop span").textContent,
       [...document.querySelectorAll("label")].map(x => x.textContent), document.querySelector(".hint").textContent, document.getElementById("go").textContent, document.getElementById("reset").textContent, [...document.querySelectorAll(".pane h3")].map(x => x.textContent), [document.getElementById("imgBefore").alt, document.getElementById("imgAfter").alt], document.getElementById("download").textContent, document.querySelector("footer").textContent]`),
-      [l, S.docTitle, S.title, S.sub, S.privacy, S.dropLabel, S.drop1, S.drop2, [S.maxW, S.maxH, S.target], S.hint, S.go, S.reset, [S.before, S.after], [S.altBefore, S.altAfter], S.download, S.foot]);
+      [l, S.docTitle, S.title, S.sub, I18N[l].common.localNote, S.dropLabel, S.drop1, S.drop2, [S.maxW, S.maxH, S.target], S.hint, S.go, S.reset, [S.before, S.after], [S.altBefore, S.altAfter], S.download, S.foot]);
     check(`${tag} · varsayılanlar 600 × 800 px, 150 KB`, await ev(`["maxW","maxH","target"].map(i => document.getElementById(i).value)`), ["600", "800", "150"]);
     await setFiles("#file", [path.join(FX, "c", "BUYUK_01.jpg")]); await waitUntil(`document.getElementById("statBefore").textContent.includes("px")`);
     check(`${tag} · seçince önceki boyut ve ölçü`, await ev(`[/^\\d+ KB4032×3024 px$/.test(document.getElementById("statBefore").textContent), document.getElementById("controls").hidden, document.getElementById("result").hidden]`), [true, false, true]);
@@ -77,12 +95,14 @@ const PDFINFO = `(async href => { const d = await PDFLib.PDFDocument.load(await 
     const saved = await ev(`(async () => { const f = document.getElementById("file").files[0]; const blob = await (await fetch(document.getElementById("imgAfter").src)).blob(); const bm = await createImageBitmap(blob); return { saved: Math.round((1 - blob.size / f.size) * 100), type: blob.type, w: bm.width, h: bm.height, size: blob.size }; })()`);
     check(`${tag} · küçült: kutuya sığdı, hedefin altında, sonuç JPEG`, [r.w, r.h, r.kb <= 150, saved.type, saved.w, saved.h, saved.size <= 150 * 1024, r.cls], [600, 450, true, "image/jpeg", 600, 450, true, "verdict ok"]);
     check(`${tag} · sonuç cümlesi`, r.text, fill(S.ok, { kb: r.kb, saved: saved.saved }));
+    await audit(`${tag} · sonuç (tamam)`);
     await click("#download");
     check(`${tag} · indirilen dosyanın adı`, await ev(`window.__dl.at(-1).name`), "BUYUK_01" + S.suffix + ".jpg");
     await ev(`(document.getElementById("target").value = 5, document.getElementById("maxW").value = 4000, document.getElementById("maxH").value = 4000)`);
     await click("#go"); await waitUntil(`document.getElementById("verdict").className === "verdict miss"`, 60000);
     r = await ev(`({ text: document.getElementById("verdict").textContent, kb: +document.getElementById("statAfter").textContent.match(/^(\\d+) KB/)[1] })`);
     check(`${tag} · hedef tutmayınca uyarı cümlesi`, r.text, fill(S.miss, { kb: r.kb, target: 5 }));
+    await audit(`${tag} · sonuç (hedef tutmadı)`);
     await click("#reset"); check(`${tag} · "${S.reset}"`, await ev(`[document.getElementById("controls").hidden, document.getElementById("result").hidden]`), [true, true]);
     await setFiles("#file", [path.join(FX, "a", "b_exif6.jpg")]); await waitUntil(`!document.getElementById("controls").hidden`);
     await ev(`(document.getElementById("target").value = 150, document.getElementById("maxW").value = 600, document.getElementById("maxH").value = 800)`);

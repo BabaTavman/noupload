@@ -23,7 +23,7 @@ npm test -- --verbose    geçen kontrolleri de yaz
 | `seo` | `seo.test.js` | Her sayfada `lang`, title, description, canonical, hreflang + x-default, dil bağlantıları; şablon artığı ve kırık bağlantı yok; yüklenen her kaynak yerel; `sitemap.xml`, `robots.txt`. Deponun geçici kopyasında `build.js`: tekrar üretim değişiklik yapmıyor, CRLF/BOM zararsız, **yeni dil = tek dosya**, hatalı girdide açık hata, kaldırılan dilin bayat sayfaları fark ediliyor. Tarayıcı istemez. |
 | `tools` | `tools.test.js` | `pdf.html` (birleştirme, sayfa seçme, döndürme) ve `foto.html` (küçültme, EXIF yönü) her dilde; üretilen PDF/JPEG açılıp bakılır. Üç araç da sayfa açıldıktan sonra **bağlantı kesilince** çalışıyor. Site dışına tek istek yok. |
 | `foto-pdf` | `foto-pdf.test.js` | Fotoğraftan PDF uçtan uca, her dil için ayrı koşar: sıra, EXIF ve döndürme, sayfaya sığdırma, kalite sınırları, 120 fotoğraf, 30 × 12 MP, aynı anda tek fotoğraf açık, iptal, 360px'te dört tema durumu, dokunma hedefleri. Üretilen PDF pdf.js ile çizilip piksellerinden doğrulanır. |
-| `site` | `site.test.js` | Her dil × her sayfa: tema düğmesi (üç durum, kalıcılık, öteki dile geçince korunma, "Geri" önbelleği), marka ikonu, 320–1200px'te taşma yok, kırıntı sınırları, üst çubuğun zıplamaması, "← Araçlar", kartlar, "Diğer araçlar". |
+| `site` | `site.test.js` | Her dil × her sayfa: tema düğmesi (üç durum, kalıcılık, öteki dile geçince korunma, "Geri" önbelleği), marka karesi, 320–1200px'te taşma yok, kırıntı sınırları, üst çubuğun zıplamaması, "← Araçlar", kartlar, "Diğer araçlar", alt not; tasarım sistemi (F bölümü): renk token'ları, yerel yazı tipleri, h1 boyutları, lekeler, hareket kuralları (azaltılmış hareket dahil), kartların fare/dokunmatik davranışı, her sayfada iki temada metin kontrastı. |
 | `robustness` | `robustness.test.js` | Geçici kopyalara bir ve üç dil daha eklenip üst çubuk 300–760px arasında taranır. `pdf.html`: dosya adı HTML olarak yorumlanmıyor; worker alınamadan bağlantı kesilirse açık mesaj ve yenilemeden toparlanma. |
 
 Takımlar tek başına da çalışır ve bölüm seçilebilir: `node tests/site.test.js C`,
@@ -48,7 +48,7 @@ Beklenen metinler `i18n/*.json` dosyalarından, diller/sayfalar/site adresi `nod
 - `harness.js` — yerel sunucu + tarayıcı. Sunucu yayını taklit eder (site `build.js`'teki adresin yolunda, ör.
   `/noupload/`; klasör adresleri `index.html` verir; doğru dosya türleri). `launch()` şunları döndürür:
   `go`, `navigate`, `reload`, `ev` (sayfada JS çalıştırır), `click`, `setFiles` (gerçek dosya seçimi),
-  `waitUntil`, `os("dark")` (işletim sistemi teması), `size` / `mobile` (ekran), `offline`, `shot`, `send` (ham CDP).
+  `waitUntil`, `os("dark")` (işletim sistemi teması), `size` / `mobile` (ekran), `touch(true)` (dokunmatik cihaz: hover yok, kaba işaretçi), `offline`, `shot`, `send` (ham CDP).
   `reporter()` sonuç defteridir: konsol hatası ve site dışına istek de başarısızlık sayılır.
 - `fixtures.js` — test fotoğrafları ve PDF'leri. İlk koşuda `tests/.tmp/fixtures/` altında üretilir, depoya girmez.
   Her fotoğrafın köşeleri renkli, ortasında sıra numarası ikili kodludur; testler üretilen PDF'ten yönü ve sırayı
@@ -59,7 +59,7 @@ Beklenen metinler `i18n/*.json` dosyalarından, diller/sayfalar/site adresi `nod
 
 ## Bilinmesi gerekenler
 
-- Telefon genişlikleri `mobile()` ile ölçülür. `size()` masaüstünü taklit eder; oradaki 15px'lik kaydırma
+- `mobile()` yalnızca genişliği ve kaydırma çubuğunu taklit eder; başsız Chrome yine "fare var" der. Telefon davranışı (kartlarda eğiklik yok, açıklamalar açık, ≥40px hedefler) için ayrıca `b.touch(true)` şart. Telefon genişlikleri `mobile()` ile ölçülür. `size()` masaüstünü taklit eder; oradaki 15px'lik kaydırma
   çubuğu genişlik sınırlarını kaydırır.
 - Yerel sunucu `cache-control: no-cache` gönderir. `no-store` gönderseydi Chrome sayfayı "Geri" önbelleğine
   almaz, o kontrol yanlış alarm verirdi (GitHub Pages `max-age=600` gönderir).

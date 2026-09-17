@@ -278,20 +278,21 @@ const SPY = `(() => {
 
   /* ---------- T9. 360px: taşma yok, dokunma hedefleri, dört tema durumu, iki dil ---------- */
   if (section("T9")) {
+    await b.touch(true);      // gerçek telefon: (hover:none) + (pointer:coarse)
     const STATES = [["light", null], ["dark", null], ["light", "dark"], ["dark", "light"]];
     for (const [sys, stored] of STATES) {
       await os(sys); await mobile(360, 740); await fresh(stored);
       const dark = (stored || sys) === "dark", tag = `T9 [sistem=${sys}, kayıt=${stored}]`;
       const over = () => ev(`(() => { const cw = document.documentElement.clientWidth; const bad = [...document.querySelectorAll("body *")].filter(n => { const q = n.getBoundingClientRect(); return q.width && (q.right > cw + .5 || q.left < -.5); }).map(n => n.tagName + "#" + n.id + "." + n.className); return [document.documentElement.scrollWidth > cw, bad.slice(0, 5)]; })()`);
-      check(`${tag} boş durumda taşma yok, zemin ${dark ? "koyu" : "açık"}`, [await over(), await ev(`getComputedStyle(document.documentElement).getPropertyValue("--ground").trim().toUpperCase()`)], [[false, []], dark ? "#101A21" : "#EEF1F3"]);
+      check(`${tag} boş durumda taşma yok, zemin ${dark ? "koyu" : "açık"}`, [await over(), await ev(`getComputedStyle(document.documentElement).getPropertyValue("--ground").trim().toUpperCase()`)], [[false, []], dark ? "#16141E" : "#FFFBF3"]);
       await pick(A);
       check(`${tag} liste + seçenekler: taşma yok`, await over(), [false, []]);
       const t = await ev(`(() => { const r = s => [...document.querySelectorAll(s)].map(n => n.getBoundingClientRect()); const min = (a, k) => Math.round(Math.min(...a.map(q => q[k])) * 10) / 10;
         return { tileBtnW: min(r("#grid button"), "width"), tileBtnH: min(r("#grid button"), "height"), seg: min(r(".seg label"), "height"), pick: min(r("#pick"), "height"), make: min(r("#make"), "height"), clear: min(r("#clear"), "height"), cols: getComputedStyle(document.getElementById("grid")).gridTemplateColumns.split(" ").length }; })()`);
       check(`${tag} dokunma hedefleri ≥ 40px, ızgara 2 sütun`, [t.tileBtnW >= 40, t.tileBtnH >= 40, t.seg >= 40, t.pick >= 40, t.make >= 40, t.clear >= 40, t.cols], [true, true, true, true, true, true, 2]);
       const c = await ev(`(() => { const v = n => { const i = document.createElement("i"); i.style.color = "var(" + n + ")"; document.body.append(i); const x = getComputedStyle(i).color; i.remove(); return x; }; const cs = (s, p) => getComputedStyle(document.querySelector(s))[p];
-        return [cs(".ph", "backgroundColor") === v("--surface"), cs(".no", "backgroundColor") === v("--accent"), cs(".no", "color") === v("--accent-ink"), cs(".seg input:checked + span", "backgroundColor") === v("--accent"), cs("#goBar", "backgroundColor") === v("--ground"), cs("#make", "color") === v("--accent-ink"), cs("#opts", "backgroundColor") === v("--surface")]; })()`);
-      check(`${tag} yeni öğelerin renkleri temayı izliyor`, c, [true, true, true, true, true, true, true]);
+        return [cs(".ph", "backgroundColor") === v("--surface"), cs(".no", "backgroundColor") === v("--ink"), cs(".no", "color") === v("--ground"), cs(".seg input:checked + span", "backgroundColor") === v("--blue"), cs(".seg input:checked + span", "color") === v("--on-blue"), cs("#goBar", "backgroundColor") === v("--ground"), cs("#make", "backgroundColor") === v("--blue"), cs("#make", "color") === v("--on-blue"), cs("#opts", "backgroundColor") === v("--surface")]; })()`);
+      check(`${tag} öğelerin renkleri temayı izliyor (numara: ink/zemin, seçili seçenek ve birincil düğme: mavi)`, c, [true, true, true, true, true, true, true, true, true]);
       await make();
       check(`${tag} sonuç durumunda taşma yok, İndir ≥ 40px`, [await over(), await ev(`Math.round(document.getElementById("dl").getBoundingClientRect().height) >= 40`)], [[false, []], true]);
       await b.fullShot(path.join(SHOTS, `telefon-360-${sys}-${stored || "sistem"}.png`), 360);
@@ -302,6 +303,7 @@ const SPY = `(() => {
       const r = await ev(`(() => { const cw = document.documentElement.clientWidth; return [document.documentElement.scrollWidth > cw, Math.min(...[...document.querySelectorAll("#grid button")].map(n => n.getBoundingClientRect().width)) >= 40]; })()`);
       check(`T9 ${w}px: taşma yok, kare düğmeleri ≥ 40px`, r, [false, true]);
     }
+    await b.touch(false);
   }
 
   /* ---------- T10. Metinler: sayfa kendi dilinde, i18n dosyasıyla birebir ---------- */
@@ -310,10 +312,10 @@ const SPY = `(() => {
     const { tools, ...commonFlat } = I18N.common;
     const r = await ev(`({ lang: document.documentElement.lang, str: STR, dataT: document.querySelectorAll("[data-t]").length, oldBtn: !!document.getElementById("lang"),
       seg: [...document.querySelectorAll(".seg label span")].map(x => x.textContent), legends: [...document.querySelectorAll(".seg legend")].map(x => x.textContent), hints: [document.querySelector("#list .hint").textContent, document.querySelector("#setSize .hint").textContent, document.getElementById("bigHint").textContent],
-      btns: ["clear", "cancel", "dl"].map(i => document.getElementById(i).textContent), head: [document.querySelector("h1").textContent, document.querySelector("header p").textContent, document.querySelector(".privacy span:last-child").textContent, document.querySelector(".drophint").textContent, document.querySelector("footer").textContent],
+      btns: ["clear", "cancel", "dl"].map(i => document.getElementById(i).textContent), head: [document.querySelector("h1").textContent, document.querySelector("header p").textContent, document.querySelector(".localnote").textContent, document.querySelector(".drophint").textContent, document.querySelector("footer").textContent],
       grid: document.getElementById("grid").getAttribute("aria-label"), aria: document.querySelector('#grid li:nth-child(3) [data-act="rot"]').getAttribute("aria-label"), dl: document.getElementById("dl").getAttribute("download") })`);
     check("T10 sayfanın dili ve STR = i18n dosyasındaki ortak + sayfa metinleri", [r.lang, r.str, r.dataT, r.oldBtn], [LANG, { ...commonFlat, ...X, locale: I18N.lang.locale }, 0, false]);
-    check("T10 sabit metinler", [r.seg, r.legends, r.hints, r.btns, r.head, r.grid, r.aria, r.dl], [[X.sizeA4, X.sizeLetter, X.sizePhoto, X.qSmall, X.qBalanced, X.qHigh], [X.sizeL, X.qualL], [X.orderHint, X.sizeHint, X.bigHint], [X.clear, X.cancel, X.download], [X.title, X.sub, X.privacy, X.dropHint, X.foot], X.gridLabel, "3: " + X.rot, X.fileName]);
+    check("T10 sabit metinler", [r.seg, r.legends, r.hints, r.btns, r.head, r.grid, r.aria, r.dl], [[X.sizeA4, X.sizeLetter, X.sizePhoto, X.qSmall, X.qBalanced, X.qHigh], [X.sizeL, X.qualL], [X.orderHint, X.sizeHint, X.bigHint], [X.clear, X.cancel, X.download], [X.title, X.sub, I18N.common.localNote, X.dropHint, X.foot], X.gridLabel, "3: " + X.rot, X.fileName]);
   }
 
   /* ---------- T11. pdf-lib yüklenemezse ---------- */

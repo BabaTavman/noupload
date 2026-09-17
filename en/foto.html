@@ -9,8 +9,9 @@
 <link rel="alternate" hreflang="tr" href="https://babatavman.github.io/noupload/foto.html">
 <link rel="alternate" hreflang="en" href="https://babatavman.github.io/noupload/en/foto.html">
 <link rel="alternate" hreflang="x-default" href="https://babatavman.github.io/noupload/en/foto.html">
-<meta name="theme-color" content="#17607F">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317607F'/%3E%3Cpath d='M10 7h8l5 5v13H10z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M18 7v5h5' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 19h9' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#FFFBF3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FF5A3C'/%3E%3Cpath d='M10.5 22.5v-13l11 13v-13' fill='none' stroke='%231C1B29' stroke-width='3.6' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <script>
   /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
      Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
@@ -19,52 +20,46 @@
 <style>[hidden]{display:none !important}</style><!-- site.css yüklenemese bile gizli bölümler gizli kalsın -->
 <link rel="stylesheet" href="../assets/site.css">
 <style>
-  /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
+  /* Bu sayfaya özgü stil. Ortak kurallar (renkler, yazı tipleri, üst çubuk, düğmeler, kartlar, alt not) assets/site.css'te;
      bu blok ondan sonra geldiği için aynı seçicide buradaki geçerli olur. */
-  body{padding-bottom:56px}
   .wrap{max-width:880px}
-  /* dil bağlantısı eklenince üst çubuk tek satıra ancak 436px'te sığıyor ("/ foto", "/ pdf"ten bir harf uzun);
+  /* dil bağlantısı eklenince üst çubuk tek satıra ancak daha geniş ekranda sığıyor ("/ foto", "/ pdf"ten bir harf uzun);
      kırıntı o genişliğe kadar gizli kalsın ki çubuk bir tek, bir iki satır olmasın */
-  @media (max-width:440px){.brand small{display:none}}
+  @media (max-width:500px){.brand small{display:none}}
 
-  /* --- dosya bırakma alanı --- */
-  #drop{
-    border:2px dashed var(--rule); border-radius:var(--radius);
-    padding:34px 18px; text-align:center; cursor:pointer;
-    background:var(--surface); transition:border-color .15s, background .15s;
-  }
-  #drop.over{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface))}
-  #drop strong{display:block;font-size:1.05rem;margin-bottom:4px}
-  #drop span{color:var(--ink-3);font-size:.9rem}
+  /* bırakma alanı */
+  #drop{border:2px dashed var(--dash);border-radius:16px;padding:34px 18px;text-align:center;cursor:pointer;background:var(--surface)}
+  #drop.over{border-color:var(--blue)}
+  #drop strong{display:block;font-size:1.0625rem;font-weight:600;margin-bottom:4px}
+  #drop span{color:var(--ink-3);font-size:.875rem}
   #file{display:none}
 
   /* --- ayarlar --- */
   .row{display:flex;flex-wrap:wrap;gap:14px}
   .field{display:flex;flex-direction:column;gap:6px;flex:1 1 150px;min-width:0}
-  label{font-size:.82rem;color:var(--ink-2);font-weight:600}
+  label{font-size:.84375rem;color:var(--ink-2);font-weight:600}
   input[type=number], select{
-    font:inherit; font-size:.95rem; padding:9px 10px;
-    border:1px solid var(--rule); border-radius:7px;
+    font:inherit; font-size:1rem; padding:10px 12px;
+    border:1.5px solid var(--ink-3); border-radius:10px;
     background:var(--ground); color:var(--ink); width:100%;
   }
   input:focus-visible, select:focus-visible, #drop:focus-visible{
-    outline:2px solid var(--accent); outline-offset:2px;
+    outline:3px solid var(--blue); outline-offset:2px;
   }
-  .hint{font-size:.78rem;color:var(--ink-3)}
-  button{font-size:.95rem;padding:11px 18px}
+  .hint{font-size:.8125rem;color:var(--ink-3)}
 
   /* --- sonuç --- */
   .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media (max-width:520px){.compare{grid-template-columns:1fr}}
   .pane{display:flex;flex-direction:column;gap:8px;min-width:0}
-  .pane h3{margin:0;font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3)}
-  .pane img{width:100%;height:auto;border-radius:7px;border:1px solid var(--rule);background:var(--ground)}
-  .stat{font-family:var(--mono);font-size:.85rem;color:var(--ink-2)}
-  .stat b{color:var(--ink);font-size:1.05rem}
-  .verdict{font-size:.9rem;padding:10px 12px;border-radius:7px;background:var(--ground);color:var(--ink-2)}
-  .verdict.ok{color:var(--good)}
-  .verdict.miss{color:var(--warn)}
-  footer{margin-top:8px}
+  .pane h3{margin:0;font-family:var(--font);font-size:.78125rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+  .pane img{width:100%;height:auto;border-radius:10px;border:1.5px solid var(--rule);background:var(--ground)}
+  .stat{font-family:var(--mono);font-size:.84375rem;color:var(--ink-2)}
+  .stat b{color:var(--ink);font-size:1.0625rem}
+  /* mesajlar: yeşil yalnızca "tamam" durumu için; uyarıda yazı koyu kalır, mercan yalnızca kenar çizgisi (küçük yazıda kontrastı yetmez) */
+  .verdict{font-size:.90625rem;padding:10px 14px;border-radius:12px;border-left:4px solid var(--rule);background:var(--ground);color:var(--ink-2)}
+  .verdict.ok{color:var(--green-text);border-left-color:var(--green)}
+  .verdict.miss{color:var(--ink);border-left-color:var(--brand)}
 </style>
 </head>
 <body>
@@ -74,8 +69,8 @@
     <div class="barlead">
       <a class="back" href="./">← Tools</a>
       <a class="brand" href="./">
-        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
-        <span>NoUpload</span><small>/ foto</small>
+        <span class="mark" aria-hidden="true">N</span>
+        <span class="name">NoUpload</span><small>/ foto</small>
       </a>
     </div>
     <div class="barbtns">
@@ -87,7 +82,6 @@
   <header>
     <h1>Image Shrinker</h1>
     <p>Resizes a photo to the pixel size you need and pushes it under a file size limit. For application forms that say &quot;150 KB at most&quot;.</p>
-    <p class="privacy"><span>●</span> <span>Your file is never uploaded — everything runs in your browser.</span></p>
   </header>
 
   <div id="drop" tabindex="0" role="button" aria-label="Choose a photo">
@@ -135,30 +129,20 @@
     <button id="download">Download</button>
   </div>
 
+  <p class="localnote">Your file never leaves your device — everything runs in your browser.</p>
+
   <section class="more">
     <div class="section-head">
       <h2>Other tools</h2>
     </div>
     <div class="tools">
-      <a class="tool" href="pdf.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v14H8z"/><path d="M15 3v4h4"/><path d="M4 8v13h11"/><path d="M11 13h4M11 16h4"/></svg>
-        </span>
-        <div>
-          <h3>PDF Tool</h3>
-          <p>Merge files, pick the pages you want as a new PDF, rotate pages.</p>
-          <span class="go">Open →</span>
-        </div>
+      <a class="tool" href="pdf.html" data-tool="pdf">
+        <h3>PDF Tool</h3>
+        <p>Merge files, pick the pages you want as a new PDF, rotate pages.</p>
       </a>
-      <a class="tool" href="foto-pdf.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
-        </span>
-        <div>
-          <h3>Photos to PDF</h3>
-          <p>Put your slide and whiteboard photos in order and turn them into a single PDF.</p>
-          <span class="go">Open →</span>
-        </div>
+      <a class="tool" href="foto-pdf.html" data-tool="foto-pdf">
+        <h3>Photos to PDF</h3>
+        <p>Put your slide and whiteboard photos in order and turn them into a single PDF.</p>
       </a>
     </div>
   </section>
@@ -172,7 +156,7 @@ const STR = {
  "brand": "NoUpload",
  "back": "← Tools",
  "moreH": "Other tools",
- "open": "Open →",
+ "localNote": "Your file never leaves your device — everything runs in your browser.",
  "themeDark": "Dark",
  "themeLight": "Light",
  "themeSystem": "System",
@@ -180,7 +164,6 @@ const STR = {
  "description": "Resize a photo to the pixel size you need and push it under a file size limit. Your photo is never uploaded; everything runs in your browser.",
  "title": "Image Shrinker",
  "sub": "Resizes a photo to the pixel size you need and pushes it under a file size limit. For application forms that say \"150 KB at most\".",
- "privacy": "Your file is never uploaded — everything runs in your browser.",
  "dropLabel": "Choose a photo",
  "drop1": "Drop a photo here",
  "drop2": "or click to choose · JPG, PNG, WebP",

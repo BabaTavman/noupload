@@ -15,11 +15,12 @@ const { launch, reporter, ROOT, FX, config, prefix, fileOf, rel, absUrl, i18n, f
 const { ensureFixtures, files } = require("./fixtures.js");
 const { check, finish, crash } = reporter();
 const SITE = config.site, LANGS = config.langs, PAGES = config.pages;
-const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "application/javascript", ".xml": "application/xml", ".txt": "text/plain" };
+const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "application/javascript", ".xml": "application/xml", ".txt": "text/plain", ".woff2": "font/woff2" };
 
 (async () => {
   await ensureFixtures();
-  const published = [...LANGS.flatMap(l => PAGES.map(p => prefix(l) + p + ".html")), "assets/site.css", "assets/site.js", "lib/pdf-lib.min.js", "lib/pdf.min.js", "lib/pdf.worker.min.js", "sitemap.xml", "robots.txt"];
+  const published = [...LANGS.flatMap(l => PAGES.map(p => prefix(l) + p + ".html")), "assets/site.css", "assets/site.js", "lib/pdf-lib.min.js", "lib/pdf.min.js", "lib/pdf.worker.min.js", "sitemap.xml", "robots.txt",
+    ...fs.readdirSync(path.join(ROOT, "assets", "fonts")).map(f => "assets/fonts/" + f)];      // yazı tipleri (ikili) + lisans metinleri
   for (const f of published) {
     const r = await fetch(SITE + f, { cache: "no-store" }), body = Buffer.from(await r.arrayBuffer());
     const local = fs.readFileSync(path.join(ROOT, f));
@@ -32,9 +33,9 @@ const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "application/ja
   for (const l of LANGS) for (const p of PAGES) {
     await b.navigate(absUrl(l, p));
     const r = await ev(`({ lang: document.documentElement.lang, canon: document.querySelector('link[rel="canonical"]').href, alts: [...document.querySelectorAll('link[rel="alternate"]')].map(a => a.hreflang + "=" + a.href).join(" "),
-      title: document.title, styled: getComputedStyle(document.querySelector(".brand .mark")).display, robots: !!document.querySelector('meta[name="robots"]'), links: [...document.querySelectorAll("a.langbtn")].map(a => a.href) })`);
+      title: document.title, styled: getComputedStyle(document.querySelector(".brand .mark")).display, fonts: [...document.fonts].some(f => f.status === "loaded") && ![...document.fonts].some(f => f.status === "error"), robots: !!document.querySelector('meta[name="robots"]'), links: [...document.querySelectorAll("a.langbtn")].map(a => a.href) })`);
     check(`yayında ${rel(l, p) || "(ana sayfa)"} · lang, canonical, hreflang, başlık, stil, dil bağlantıları`, r, { lang: l, canon: absUrl(l, p), alts: [...LANGS.map(x => `${x}=${absUrl(x, p)}`), `x-default=${absUrl(config.xDefault, p)}`].join(" "),
-      title: i18n(l)[p].docTitle, styled: "grid", robots: false, links: LANGS.filter(x => x !== l).map(x => absUrl(x, p)) });
+      title: i18n(l)[p].docTitle, styled: "grid", fonts: true, robots: false, links: LANGS.filter(x => x !== l).map(x => absUrl(x, p)) });
   }
   if (LANGS.length > 1) {
     const [from, to] = LANGS;

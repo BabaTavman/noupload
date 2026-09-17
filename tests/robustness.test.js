@@ -41,8 +41,7 @@ function addLang(dir, code, name) {
       for (const page of pages) {
         await b.mobile(300, 800); await b.navigate(b.origin + mount + page);
         const bad = [], barH = []; let flips = 0, crumbWrap = 0;
-        // bugünkü dil sayısıyla ana sayfanın tema düğmesi bilerek yazısı kadar (eski görünüm birebir korunuyor); 320px'ten dar telefon yok
-        for (let w = (!hasNew && page === "" ? 320 : 300); w <= 760; w += 2) {
+        for (let w = 300; w <= 760; w += 2) {
           await b.mobile(w, 800);
           await ev(`new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))`);          // resize olayı işlensin
           const seen = [];

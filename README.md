@@ -37,7 +37,8 @@ Node 22+ ve kurulu bir Chrome ya da Edge yeter; paket kurulmaz. Ayrıntı, görs
 | Bir metin, sayfa başlığı, arama sonucu açıklaması | `i18n/tr.json` ve `i18n/en.json` |
 | Bir sayfanın düzeni ya da aracın kodu | `src/<sayfa>.html` |
 | Üst çubuk, "Diğer araçlar", araç kartı, `<head>` | `src/partials/` |
-| Renkler, üst çubuk, düğmeler, kartlar (ortak stil) | `assets/site.css` |
+| Renkler, yazı tipleri, üst çubuk, düğmeler, kartlar (ortak stil) | `assets/site.css` |
+| Ana sayfanın şeması, "Neden güvenebilirsiniz" kartları | `src/index.html` (metinleri `i18n/` içinde) |
 | Tema düğmesi, metin biçimleme (ortak betik) | `assets/site.js` |
 | Sitenin adresi, sayfa ve araç listesi | `build.js` dosyasının başındaki AYARLAR |
 
@@ -62,9 +63,31 @@ olarak alt satıra iner; dört beş dilden sonra açılır bir dil menüsü dü�
 **Dil ya da sayfa kaldırmak:** dosyasını sil, `node build.js` çalıştır. Eski çıktılar (ör. `de/` klasörü)
 kendiliğinden silinmez; üretim bunları "UYARI" diye listeler, `--check` de başarısız olur. Klasörü elle sil.
 
-**Yeni araç eklemek:** `src/<ad>.html` şablonu, `src/icons/<ad>.svg` simgesi, her dil dosyasında
-`<ad>` bölümü ile `common.tools.<ad>` (kart başlığı ve açıklaması); sonra `build.js` içindeki
-`PAGES` ve `TOOLS` listelerine `<ad>`.
+**Yeni araç eklemek:** `src/<ad>.html` şablonu, her dil dosyasında `<ad>` bölümü ile `common.tools.<ad>`
+(kart başlığı ve açıklaması); sonra `build.js` içindeki `PAGES` ve `TOOLS` listelerine `<ad>`. Kartın üstündeki
+renkli çubuk için `assets/site.css` içine `a.tool[data-tool="<ad>"]{--tool:var(--…)}` satırı (yoksa çubuk gri kalır).
+Şablonun `<style>` bloğunda öteki araç sayfalarındaki kırıntı kuralı da bulunmalı —
+`@media (max-width:…px){.brand small{display:none}}`, tam bu biçimde: testler sınırı bu satırdan okur. Değer, üst çubuğun
+tek satıra sığdığı en dar genişlik + kaydırma çubuğu payıdır (`"/ <ad>"` uzadıkça büyür).
+
+## Tasarım ("Canlı")
+
+Renkler `assets/site.css` başındaki token'lardır: açık tema yalın `:root`, koyu tema aynı adlarla iki blokta
+(`prefers-color-scheme: dark` + `:root[data-theme="dark"]`) — birini değiştirince ötekini de değiştir.
+Kurallar: yeşil yalnızca durum bildirir (tamam / çalışıyor); araç renkleri pdf = sarı, foto = mercan, foto-pdf = mavi;
+18px'in altındaki yazı `--ink-3`'ten açık olmaz; mercan (`--brand`) küçük yazıda kullanılmaz (kontrastı yetmez),
+yalnızca büyük yazı, simge ve kenar çizgisinde. Renkli zeminlerin üstündeki yazı için `--on-blue`, `--on-yellow`,
+`--on-brand` token'ları var; tema değişince kontrast onlarla korunur. `npm test` her sayfada, iki temada metin
+kontrastını ölçer (küçük metin ≥ 4.5:1, büyük metin ≥ 3:1).
+
+Yazı tipleri (Unbounded başlıklar, Work Sans gövde) `assets/fonts/` altında woff2 olarak durur (latin + latin-ext,
+`font-display: swap`); Google Fonts'a ya da başka bir adrese istek yapılmaz. Lisansları (SIL OFL 1.1) aynı klasörde.
+Yazı boyutları `rem` ile yazılır (16px = 1rem; 13.5px = .84375rem): tarayıcısında varsayılan yazı boyutunu büyüten
+kullanıcıda metin de büyür. Dolgu, genişlik ve medya sorguları px kalır.
+
+Hareket bilerek azdır: ana sayfadaki yeşil çizgi (bir kez), durum noktası (sürekli) ve kartların fareyle üstüne
+gelince açılması. `prefers-reduced-motion` açıkken hepsi kapanır. Dokunmatik ekranda kartlar eğik durmaz,
+açıklamaları hep görünür.
 
 ## Kütüphaneler
 

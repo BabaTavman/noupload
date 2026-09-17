@@ -9,8 +9,9 @@
 <link rel="alternate" hreflang="tr" href="https://babatavman.github.io/noupload/pdf.html">
 <link rel="alternate" hreflang="en" href="https://babatavman.github.io/noupload/en/pdf.html">
 <link rel="alternate" hreflang="x-default" href="https://babatavman.github.io/noupload/en/pdf.html">
-<meta name="theme-color" content="#17607F">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317607F'/%3E%3Cpath d='M10 7h8l5 5v13H10z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M18 7v5h5' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 19h9' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#FFFBF3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16141E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FF5A3C'/%3E%3Cpath d='M10.5 22.5v-13l11 13v-13' fill='none' stroke='%231C1B29' stroke-width='3.6' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <script>
   /* TEMA — kayıtlı tercih CSS'ten önce uygulanır ki açılışta renk yanıp sönmesin.
      Tercih yalnızca bu cihazda (localStorage) durur, hiçbir yere gönderilmez. */
@@ -25,46 +26,60 @@
 <script src="lib/pdf.min.js"></script>
 
 <style>
-  /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
+  /* Bu sayfaya özgü stil. Ortak kurallar (renkler, yazı tipleri, üst çubuk, düğmeler, kartlar, alt not) assets/site.css'te;
      bu blok ondan sonra geldiği için aynı seçicide buradaki geçerli olur. */
-  @media (max-width:430px){.brand small{display:none}}
-  .topline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  /* kırıntı ("/ pdf") çubuğun tek satıra sığdığı genişliğe (476px + masaüstündeki kaydırma çubuğu payı) kadar gizli: çubuk bir tek, bir iki satır olmasın */
+  @media (max-width:495px){.brand small{display:none}}
 
-  /* sekmeler */
-  .tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:5px}
-  .tab{flex:1;padding:10px 12px;border-radius:7px;border:none;background:transparent;color:var(--ink-2);font:inherit;font-weight:600;font-size:.93rem;cursor:pointer}
-  .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+  /* sekmeler: hap düğmeler; seçili olan aracın rengiyle (sarı) dolar */
+  .tabs{display:flex;flex-wrap:wrap;gap:8px}
+  .tab{padding:10px 20px;border-radius:999px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink-2);font-family:var(--display);font-weight:600;font-size:.875rem}
+  .tab[aria-selected="true"]{background:var(--yellow);border-color:var(--ink);color:var(--on-yellow)}
 
   /* bırakma alanı */
-  .drop{border:2px dashed var(--rule);border-radius:var(--radius);padding:30px 18px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color .15s}
-  .drop.over{border-color:var(--accent)}
-  .drop strong{display:block;font-size:1.02rem;margin-bottom:4px}
-  .drop span{color:var(--ink-3);font-size:.9rem}
+  .drop{border:2px dashed var(--dash);border-radius:16px;padding:34px 18px;text-align:center;cursor:pointer;background:var(--surface)}
+  .drop.over{border-color:var(--blue)}
+  .drop strong{display:block;font-size:1.0625rem;font-weight:600;margin-bottom:4px}
+  .drop span{color:var(--ink-3);font-size:.875rem}
   input[type=file]{display:none}
 
   /* dosya listesi (birleştirme) */
   ul.files{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-  ul.files li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
-  ul.files .idx{font-family:var(--mono);font-size:.82rem;color:var(--ink-3)}
-  ul.files .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.93rem}
-  ul.files .meta{font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
+  ul.files li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--ground);border:1.5px solid var(--rule);border-radius:12px;padding:10px 12px}
+  ul.files .idx{font-family:var(--mono);font-size:.8125rem;color:var(--ink-3)}
+  ul.files .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9375rem}
+  ul.files .meta{font-family:var(--mono);font-size:.78125rem;color:var(--ink-3)}
   .mini{display:flex;gap:4px}
-  .mini button{padding:5px 9px;font-size:.85rem;background:transparent;color:var(--ink-2);border:1px solid var(--rule);border-radius:6px}
+  .mini button{padding:6px 10px;font-size:.875rem;border-radius:10px;background:var(--surface);color:var(--ink-2);border-color:var(--rule)}
 
   /* sayfa ızgarası */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
-  .pg{position:relative;border:2px solid var(--rule);border-radius:8px;padding:6px;background:var(--surface-2);cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
-  .pg.sel{border-color:var(--accent);background:color-mix(in srgb, var(--accent) 10%, var(--surface-2))}
-  .pg canvas{width:100%;height:auto;border-radius:4px;background:#fff;display:block}
-  .pg .no{font-family:var(--mono);font-size:.74rem;color:var(--ink-3)}
-  .pg.sel .no{color:var(--accent);font-weight:600}
+  .pg{position:relative;border:2px solid var(--rule);border-radius:12px;padding:6px;background:var(--ground);cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .pg.sel{border-color:var(--blue);background:color-mix(in srgb, var(--blue) 9%, var(--surface))}
+  .pg canvas{width:100%;height:auto;border-radius:6px;background:#fff;display:block}
+  .pg .no{font-family:var(--mono);font-size:.78125rem;color:var(--ink-3)}
+  .pg.sel .no{color:var(--ink);font-weight:600}
   .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .spacer{flex:1}
-  .count{font-family:var(--mono);font-size:.82rem;color:var(--ink-3)}
-  .msg{font-size:.9rem;padding:10px 12px;border-radius:7px;background:var(--ground);color:var(--ink-2);margin-top:12px}
-  .msg.ok{color:var(--good)}
-  .msg.err{color:var(--warn)}
-  .drop:focus-visible,.pg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .count{font-family:var(--mono);font-size:.8125rem;color:var(--ink-3)}
+  /* mesajlar: yeşil yalnızca "tamam" durumu için; uyarıda yazı koyu kalır, mercan yalnızca kenar çizgisi (küçük yazıda kontrastı yetmez) */
+  .msg{font-size:.90625rem;padding:10px 14px;border-radius:12px;border-left:4px solid var(--rule);background:var(--ground);color:var(--ink-2)}
+  .msg{margin-top:12px}
+  .msg.ok{color:var(--green-text);border-left-color:var(--green)}
+  .msg.err{color:var(--ink);border-left-color:var(--brand)}
+  .drop:focus-visible,.pg:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+  /* dokunmatikte sıra düğmeleri parmağa göre; dar ekranda düğmeler alt satıra iner ki dosya adına yer kalsın */
+  @media (pointer:coarse){.mini button{min-width:40px;min-height:40px;padding:0}}
+  @media (pointer:coarse) and (max-width:400px){
+    ul.files li{grid-template-columns:auto 1fr}
+    .mini{grid-column:1/-1;justify-content:flex-end}
+  }
+  /* Windows kontrast temasında dolgu renkleri silinir: seçili sekme ve seçili sayfa kalın kenarlıkla ayrılır (odak halkasına dokunmadan) */
+  @media (forced-colors: active){
+    .tab[aria-selected="true"]{border:4px solid Highlight;padding:7px 17px}
+    .pg.sel{border:5px solid Highlight;padding:3px}
+    .drop.over{border-color:Highlight}
+  }
 </style>
 </head>
 <body>
@@ -74,8 +89,8 @@
     <div class="barlead">
       <a class="back" href="./">← Araçlar</a>
       <a class="brand" href="./">
-        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
-        <span>NoUpload</span><small>/ pdf</small>
+        <span class="mark" aria-hidden="true">N</span>
+        <span class="name">NoUpload</span><small>/ pdf</small>
       </a>
     </div>
     <div class="barbtns">
@@ -85,13 +100,8 @@
   </div>
 
   <header>
-    <div class="topline">
-      <div>
-        <h1>PDF Aracı</h1>
-        <p>PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.</p>
-      </div>
-    </div>
-    <p class="privacy"><span>●</span> <span>Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.</span></p>
+    <h1>PDF Aracı</h1>
+    <p>PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.</p>
   </header>
 
   <div class="tabs" role="tablist">
@@ -146,30 +156,20 @@
     </div>
   </section>
 
+  <p class="localnote">Dosyan cihazından çıkmaz — tüm işlem tarayıcında yapılıyor.</p>
+
   <section class="more">
     <div class="section-head">
       <h2>Diğer araçlar</h2>
     </div>
     <div class="tools">
-      <a class="tool" href="foto.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
-        </span>
-        <div>
-          <h3>Foto Küçültücü</h3>
-          <p>Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.</p>
-          <span class="go">Aç →</span>
-        </div>
+      <a class="tool" href="foto.html" data-tool="foto">
+        <h3>Foto Küçültücü</h3>
+        <p>Fotoğrafı hedef piksel ölçüsüne ve dosya boyutu sınırının altına indir.</p>
       </a>
-      <a class="tool" href="foto-pdf.html">
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><circle cx="10" cy="11.5" r="1.2"/><path d="M8.5 18l3-3.5 2 2 1.5-1.5 2 3"/></svg>
-        </span>
-        <div>
-          <h3>Fotoğraftan PDF</h3>
-          <p>Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
-          <span class="go">Aç →</span>
-        </div>
+      <a class="tool" href="foto-pdf.html" data-tool="foto-pdf">
+        <h3>Fotoğraftan PDF</h3>
+        <p>Slayt ve tahta fotoğraflarını sıraya koy, tek bir PDF dosyası yap.</p>
       </a>
     </div>
   </section>
@@ -183,7 +183,7 @@ const STR = {
  "brand": "NoUpload",
  "back": "← Araçlar",
  "moreH": "Diğer araçlar",
- "open": "Aç →",
+ "localNote": "Dosyan cihazından çıkmaz — tüm işlem tarayıcında yapılıyor.",
  "themeDark": "Koyu",
  "themeLight": "Açık",
  "themeSystem": "Sistem",
@@ -191,7 +191,6 @@ const STR = {
  "description": "PDF dosyalarını birleştir, istediğin sayfaları seç, döndür. Dosyan sunucuya yüklenmez; her şey tarayıcında çalışır.",
  "title": "PDF Aracı",
  "sub": "PDF dosyalarını birleştir, istediğin sayfaları seçip yeni bir PDF çıkar, sayfaları döndür.",
- "privacy": "Dosyan hiçbir yere yüklenmiyor — tüm işlem senin tarayıcında yapılıyor.",
  "tabMerge": "Birleştir",
  "tabPages": "Sayfa seç",
  "dropM1": "PDF dosyalarını buraya sürükle",
@@ -410,6 +409,7 @@ async function loadForPages(file){
     }
     updatePageCount();
   } catch(err){
+    el("cardP").hidden = false;                                       // mesaj kartın içinde: ilk seçilen dosya bozuksa kart gizli kalıyor, hata hiç görünmüyordu
     say(el("msgP"), STR.bad, "err");
   }
 }

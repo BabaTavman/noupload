@@ -60,17 +60,31 @@ function setTheme(t){
   try { t === "system" ? localStorage.removeItem("noupload-theme") : localStorage.setItem("noupload-theme", t); } catch(e){}
   paintThemeBtn();
 }
-function paintThemeBtn(){ el("theme").textContent = STR[THEME_LABEL[nextTheme(currentTheme())]]; fitBar(); }
-// Düğmenin genişliği üç yazıdan en uzununa göre sabitlenir (site.css'teki en küçük genişlik taban olarak kalır):
-// hangi dilde olursa olsun yazı değişince üst çubuk oynamasın. En küçük genişlik verilmemiş yerde (iki dilli ana sayfa) dokunulmaz.
-{
-  const btn = el("theme"), floor = parseFloat(getComputedStyle(btn).minWidth) || 0;
-  if (floor > 0) {
-    btn.style.minWidth = "0";                                       // yazıların doğal genişliği ölçülsün
-    const widest = Math.max(...Object.values(THEME_LABEL).map(key => { btn.textContent = STR[key]; return btn.getBoundingClientRect().width; }));
-    btn.style.minWidth = widest > floor ? Math.ceil(widest) + "px" : "";   // taban yetiyorsa site.css'teki değer aynen kalır
-  }
+function paintThemeBtn(){ el("theme").textContent = STR[THEME_LABEL[nextTheme(currentTheme())]]; fitBar(); paintThemeColor(); }
+// Tarayıcının adres çubuğu (theme-color) sayfanın o anki zeminini izler. <head>'deki iki meta yalnızca sistem temasına bakıyor;
+// düğmeyle sistemin tersi seçilince çubuk sayfayla ters renkte kalıyordu. Renk CSS'ten okunur: ikinci bir renk tablosu yok.
+function paintThemeColor(){
+  const ground = getComputedStyle(document.documentElement).getPropertyValue("--ground").trim();
+  if (ground) document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = ground; });
 }
+// Düğmenin genişliği üç yazıdan en uzununa göre sabitlenir (site.css'teki en küçük genişlik taban olarak kalır):
+// hangi dilde olursa olsun yazı değişince üst çubuk oynamasın. Yazı tipi sonradan yüklendiği için
+// (font-display: swap) genişlikler değişir; yüklenince bir kez daha ölçülür.
+function sizeThemeBtn(){
+  const btn = el("theme");
+  btn.style.minWidth = "";                                          // site.css'teki taban
+  const floor = parseFloat(getComputedStyle(btn).minWidth) || 0;
+  btn.style.minWidth = "0";                                         // yazıların doğal genişliği ölçülsün
+  const widest = Math.max(...Object.values(THEME_LABEL).map(key => { btn.textContent = STR[key]; return btn.getBoundingClientRect().width; }));
+  btn.style.minWidth = widest > floor ? Math.ceil(widest) + "px" : "";   // taban yetiyorsa site.css'teki değer aynen kalır
+  paintThemeBtn();
+}
+sizeThemeBtn();
+if (document.fonts) document.fonts.ready.then(sizeThemeBtn);
+
+// Kullanıcının metni (dosya adı) ş, ğ, İ gibi latin-ext harfler taşıyabilir. O alt küme dosya seçilirken değil sayfa
+// açılırken alınsın: İngilizce sayfada bu harfler yoktur, bağlantı sonradan kesilirse dosya adı yedek yazı tipine düşerdi.
+if (document.fonts) document.fonts.load('400 1em "Work Sans"', "ğ").catch(() => {});
 el("theme").addEventListener("click", () => setTheme(nextTheme(currentTheme())));
 darkMQ.addEventListener("change", paintThemeBtn);
 // "Geri" ile sayfa tarayıcının önbelleğinden gelirse betikler yeniden çalışmaz:

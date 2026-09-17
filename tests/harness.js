@@ -57,7 +57,7 @@ function findBrowser() {
 }
 
 /* ---------- yerel sunucu + tarayıcı ---------- */
-const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json", ".xml": "application/xml", ".txt": "text/plain; charset=utf-8", ".svg": "image/svg+xml", ".map": "application/json", ".md": "text/markdown; charset=utf-8" };
+const MIME = { ".woff2": "font/woff2", ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json", ".xml": "application/xml", ".txt": "text/plain; charset=utf-8", ".svg": "image/svg+xml", ".map": "application/json", ".md": "text/markdown; charset=utf-8" };
 
 // root: sunulacak depo kopyası (varsayılan: bu depo). extraMounts: [["/baska/", "klasör"], …]
 async function launch({ root = ROOT, extraMounts = [] } = {}) {
@@ -119,13 +119,17 @@ async function launch({ root = ROOT, extraMounts = [] } = {}) {
     if (r.exceptionDetails) throw new Error(expression.slice(0, 200) + " -> " + (r.exceptionDetails.exception?.description || r.exceptionDetails.text));
     return r.result.value;
   };
-  const navigate = async url => { const w = waitFor("Page.loadEventFired"); await send("Page.navigate", { url }); await w; await sleep(120); };
+  // Yazı tipleri sonradan yüklenir (font-display: swap) ve genişlikleri değiştirir: ölçümden önce hazır olmaları beklenir.
+  const settle = async () => { await sleep(80); await ev("document.fonts ? document.fonts.ready.then(() => new Promise(r => requestAnimationFrame(() => r(1)))) : 1").catch(() => {}); await sleep(40); };
+  const navigate = async url => { const w = waitFor("Page.loadEventFired"); await send("Page.navigate", { url }); await w; await settle(); };
   const go = page => navigate(`${base}/${page}`);                                   // siteye göreli: go("en/pdf.html"), go("")
-  const reload = async () => { const w = waitFor("Page.loadEventFired"); await send("Page.reload", { ignoreCache: true }); await w; await sleep(120); };
-  const waitLoad = async () => { await waitFor("Page.loadEventFired"); await sleep(120); };
+  const reload = async () => { const w = waitFor("Page.loadEventFired"); await send("Page.reload", { ignoreCache: true }); await w; await settle(); };
+  const waitLoad = async () => { await waitFor("Page.loadEventFired"); await settle(); };
   const os = scheme => send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });   // işletim sisteminin tema tercihi
   const size = (width, height = 800) => send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });   // masaüstü: kaydırma çubuğu yer kaplar
   const mobile = (width, height = 800) => send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: true });  // telefon: kaplamaz
+  // dokunmatik cihaz: (hover: none) ve (pointer: coarse) olur — başsız Chrome aksi hâlde hep "fare var" der
+  const touch = on => send("Emulation.setTouchEmulationEnabled", { enabled: on, maxTouchPoints: on ? 5 : 1 });
   const offline = on => send("Network.emulateNetworkConditions", { offline: on, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   const shot = async (file, opts = {}) => {
     const r = await send("Page.captureScreenshot", { format: "png", ...opts });
@@ -158,8 +162,31 @@ async function launch({ root = ROOT, extraMounts = [] } = {}) {
 
   await send("Page.enable"); await send("Runtime.enable"); await send("Log.enable"); await send("Network.enable"); await send("DOM.enable");
   await size(1200, 800);
-  return { base, origin, send, ev, navigate, go, reload, waitLoad, os, size, mobile, offline, shot, fullShot, click, setFiles, waitUntil, requests, problems, externalRequests, close, sleep };
+  return { base, origin, send, ev, navigate, go, reload, waitLoad, os, size, mobile, touch, offline, shot, fullShot, click, setFiles, waitUntil, requests, problems, externalRequests, close, sleep };
 }
+
+/* ---------- kontrast denetimi ---------- */
+// Sayfada çalışır (b.ev(CONTRAST_AUDIT)): görünen her metnin rengini, arkasındaki zeminle (yarı saydam katmanlar
+// üst üste bindirilerek) karşılaştırır ve WCAG eşiğinin altında kalanları döndürür: küçük metin 4.5:1,
+// büyük metin (24px ya da 18.66px kalın) 3:1. Basılamaz (disabled) denetimler ve gizli öğeler sayılmaz.
+const CONTRAST_AUDIT = `(() => {
+  const parse = c => { const n = (c.match(/-?[\\d.]+(e-?\\d+)?/g) || []).map(Number); return c.startsWith("color(") ? { r: n[0] * 255, g: n[1] * 255, b: n[2] * 255, a: n.length > 3 ? n[3] : 1 } : { r: n[0], g: n[1], b: n[2], a: n.length > 3 ? n[3] : 1 }; };
+  const over = (top, under) => ({ r: top.r * top.a + under.r * (1 - top.a), g: top.g * top.a + under.g * (1 - top.a), b: top.b * top.a + under.b * (1 - top.a), a: 1 });
+  const lum = c => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+  const bgOf = el => { const layers = []; for (let n = el; n; n = n.parentElement) { const c = parse(getComputedStyle(n).backgroundColor); if (c.a > 0) { layers.push(c); if (c.a >= 1) break; } }
+    let base = layers.length && layers[layers.length - 1].a >= 1 ? layers.pop() : { r: 255, g: 255, b: 255, a: 1 }; while (layers.length) base = over(layers.pop(), base); return base; };
+  const shown = el => { for (let n = el; n; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === "none" || s.visibility === "hidden" || +s.opacity === 0 || s.maxHeight === "0px") return false; } const q = el.getBoundingClientRect(); return q.width > 1 && q.height > 1 && !/inset\\(50%\\)/.test(getComputedStyle(el).clipPath); };
+  const bad = [];
+  for (const el of document.querySelectorAll("body *")) {
+    if (!["SCRIPT", "STYLE", "NOSCRIPT"].includes(el.tagName) && [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && shown(el) && !el.closest(":disabled")) {
+      const s = getComputedStyle(el), size = parseFloat(s.fontSize), large = size >= 24 || (size >= 18.66 && +s.fontWeight >= 700);
+      let op = 1; for (let n = el; n; n = n.parentElement) op *= +getComputedStyle(n).opacity;      // opacity ile soldurulmuş yazı da zemine karışır
+      const bg = bgOf(el), ink = parse(s.color), fg = over({ ...ink, a: ink.a * op }, bg), hi = Math.max(lum(fg), lum(bg)), lo = Math.min(lum(fg), lum(bg)), ratio = (hi + .05) / (lo + .05);
+      if (ratio < (large ? 3 : 4.5)) bad.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (el.className && typeof el.className === "string" ? "." + el.className.split(" ").join(".") : "") + " “" + el.textContent.trim().slice(0, 24) + "” " + size + "px " + ratio.toFixed(2) + ":1");
+    }
+  }
+  return bad;
+})()`;
 
 /* ---------- sonuç defteri ---------- */
 // const t = reporter(); t.check("ad", bulunan, beklenen);  … sonunda await t.finish(b)
@@ -214,4 +241,4 @@ const runBuild = (cwd, ...args) => {
 // Depoda henüz olmayan, geçerli dil kodları (geçici kopyaya dil ekleme denemeleri için)
 const spareLangs = n => ["de", "es", "fr", "it", "nl", "pt-BR", "sv", "eo"].filter(c => !config.langs.includes(c)).slice(0, n);
 
-module.exports = { launch, reporter, copyRepo, runBuild, spareLangs, ROOT, TMP, FX, config, BASE_PATH, prefix, fileOf, rel, absUrl, i18n, fill, sleep };
+module.exports = { launch, reporter, CONTRAST_AUDIT, copyRepo, runBuild, spareLangs, ROOT, TMP, FX, config, BASE_PATH, prefix, fileOf, rel, absUrl, i18n, fill, sleep };

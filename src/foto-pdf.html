@@ -9,32 +9,33 @@
 <script id="pdflib" defer src="{{root}}lib/pdf-lib.min.js"></script>
 
 <style>
-  /* Bu sayfaya özgü stil. Ortak kurallar (renkler, üst çubuk, düğmeler, kartlar) assets/site.css'te;
+  /* Bu sayfaya özgü stil. Ortak kurallar (renkler, yazı tipleri, üst çubuk, düğmeler, kartlar, alt not) assets/site.css'te;
      bu blok ondan sonra geldiği için aynı seçicide buradaki geçerli olur. */
   /* klavyeyle gezerken odaklanan öğe alttaki yapışkan çubuğun arkasında kalmasın */
   html{scroll-padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 
   /* "/ foto-pdf" kırıntısı uzun: çubuk tek satıra sığmadığı her genişlikte gizli kalsın ki
      çubuk bir tek, bir iki satır olmasın */
-  @media (max-width:500px){.brand small{display:none}}
+  @media (max-width:530px){.brand small{display:none}}
 
   /* telefonda başparmakla basılan ana düğmeler */
-  .big{min-height:52px;width:100%;padding:12px 22px;font-size:1.02rem}
+  .big{min-height:52px;width:100%;padding:12px 22px;font-size:1.03125rem}
   @media (min-width:600px){.big{width:auto;min-width:260px}}
   .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .spacer{flex:1}
 
-  /* bu sayfada sayaç ve ipuçları bilgi taşıyor ("12 / 48"): okunaklı olsun diye --ink-3 değil --ink-2 */
-  .count{font-family:var(--mono);font-size:.82rem;color:var(--ink-2)}
-  .hint{margin:0;font-size:.8rem;color:var(--ink-2)}
-  .msg{margin:0;font-size:.9rem;padding:10px 12px;border-radius:7px;background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);overflow-wrap:anywhere}
-  .msg.err{color:var(--warn)}
+  /* sayaç ve ipuçları bilgi taşıyor ("12 / 48"): küçük yazı en açık --ink-3 olabilir */
+  .count{font-family:var(--mono);font-size:.8125rem;color:var(--ink-2)}
+  .hint{margin:0;font-size:.8125rem;color:var(--ink-2)}
+  /* mesajlar: yeşil yalnızca "tamam" durumu için; uyarıda yazı koyu kalır, mercan yalnızca kenar çizgisi (küçük yazıda kontrastı yetmez) */
+  .msg{margin:0;font-size:.90625rem;padding:10px 14px;border-radius:12px;border-left:4px solid var(--rule);background:var(--surface);color:var(--ink-2);overflow-wrap:anywhere}
+  .msg.err{color:var(--ink);border-left-color:var(--brand)}
 
   /* fotoğraf seçme alanı (masaüstünde sürükle-bırak hedefi) */
-  .pick{border:2px dashed var(--rule);border-radius:var(--radius);padding:22px 18px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:border-color .15s}
-  .pick.over{border-color:var(--accent)}
+  .pick{border:2px dashed var(--dash);border-radius:16px;padding:24px 18px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .pick.over{border-color:var(--blue)}
   .pick p{margin:0}
-  .drophint{display:none;color:var(--ink-3);font-size:.9rem}
+  .drophint{display:none;color:var(--ink-3);font-size:.875rem}
   @media (hover:hover) and (pointer:fine){.drophint{display:block}}
   input[type=file]{display:none}
 
@@ -43,39 +44,38 @@
   .listhead{display:flex;align-items:center;gap:8px}
   .grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
   @media (max-width:400px){.grid{gap:6px}}
-  .ph{min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:8px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--rule)}
-  .thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface-2)}
-  .thumb img{display:block;width:100%;height:100%;object-fit:contain;transition:transform .18s}
-  .no{position:absolute;top:6px;left:6px;min-width:26px;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-family:var(--mono);font-size:.76rem;font-weight:600;text-align:center}
+  .ph{position:relative;min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:12px;background:var(--surface)}
+  .ph::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--rule);pointer-events:none}   /* kenarlık küçük resmin ÜSTÜNDE dursun */
+  .thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:color-mix(in srgb, var(--ink) 5%, var(--surface))}
+  .thumb img{display:block;width:100%;height:100%;object-fit:contain}
+  .no{position:absolute;top:6px;left:6px;min-width:26px;padding:1px 7px;border-radius:999px;background:var(--ink);color:var(--ground);font-family:var(--mono);font-size:.78125rem;font-weight:600;text-align:center}
   .ctl{display:grid;grid-template-columns:repeat(4,minmax(40px,1fr))}
-  .ctl button{min-height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--ink-2);box-shadow:inset 0 1px 0 var(--rule)}
-  .ctl button + button{box-shadow:inset 0 1px 0 var(--rule), inset 1px 0 0 var(--rule)}
-  .ctl button:not(:disabled):hover{color:var(--accent);background:var(--surface-2)}
+  .ctl button{min-height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--ink-2);box-shadow:inset 0 1.5px 0 var(--rule)}
+  .ctl button + button{box-shadow:inset 0 1.5px 0 var(--rule), inset 1.5px 0 0 var(--rule)}
+  .ctl button:not(:disabled):hover{color:var(--ink);background:var(--ground)}
   .ctl button:focus-visible{outline-offset:-3px}
-
   /* simgeler SVG: ok ve çarpı karakterleri bazı telefonlarda renkli emoji olarak ya da hiç çizilmiyor */
   .ctl svg{display:block;width:20px;height:20px;margin:auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
   /* seçenekler: üçlü seçim düğmeleri */
   .opts{display:flex;flex-direction:column;gap:16px}
   fieldset.seg{border:0;margin:0;padding:0;min-width:0}
-  .seg legend{padding:0;margin-bottom:6px;font-size:.82rem;color:var(--ink-2);font-weight:600}
+  .seg legend{padding:0;margin-bottom:6px;font-size:.84375rem;color:var(--ink-2);font-weight:600}
   .seg .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .seg label{position:relative;display:block;cursor:pointer}
   .seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-  .seg label span{display:grid;place-items:center;min-height:44px;padding:6px 8px;border:1px solid var(--rule);border-radius:8px;background:var(--surface-2);color:var(--ink-2);font-size:.88rem;font-weight:600;line-height:1.2;text-align:center}
-  .seg input:checked + span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-  .seg input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+  .seg label span{display:grid;place-items:center;min-height:44px;padding:6px 8px;border:1.5px solid var(--rule);border-radius:12px;background:var(--ground);color:var(--ink-2);font-size:.875rem;font-weight:600;line-height:1.2;text-align:center}
+  .seg input:checked + span{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+  .seg input:focus-visible + span{outline:3px solid var(--blue);outline-offset:2px}
   .seg input:disabled + span{opacity:.45}
   .seg .hint{margin-top:6px}
 
-  /* alt çubuk: PDF oluştur → ilerleme → indir. Uzun listede ekranın altına yapışır. */
-  .gobar{position:sticky;bottom:0;z-index:5;display:flex;flex-direction:column;gap:10px;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--ground);border-top:1px solid var(--rule)}
+  /* alt çubuk: PDF oluştur → ilerleme → indir. Uzun listede ekranın altına yapışır. İlerleme = "çalışıyor" durumu, o yüzden yeşil. */
+  .gobar{position:sticky;bottom:0;z-index:5;display:flex;flex-direction:column;gap:10px;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--ground);border-top:1.5px solid var(--rule)}
   .track{flex:1;min-width:120px;height:8px;border-radius:999px;background:var(--rule);overflow:hidden}
-  .fill{height:100%;width:0;background:var(--accent)}
+  .fill{height:100%;width:0;background:var(--green-text)}
   .gobar .msg{max-height:4.8em;overflow:auto}       /* uzun dosya adları çubuğu ekranın yarısına büyütmesin */
-  .stat{margin:0;font-family:var(--mono);font-size:.9rem;color:var(--ink-2)}
-  @media (prefers-reduced-motion: reduce){.thumb img{transition:none}}
+  .stat{margin:0;font-family:var(--mono);font-size:.90625rem;color:var(--ink-2)}
 
   /* Windows kontrast temaları zemin rengini ve gölgeyi siler: seçili seçenek, ilerleme ve kare sınırları görünür kalsın */
   @media (forced-colors: active){
@@ -96,7 +96,6 @@
   <header>
     <h1>{{t.title}}</h1>
     <p>{{t.sub}}</p>
-    <p class="privacy"><span>●</span> <span>{{t.privacy}}</span></p>
   </header>
 
   <!-- ======================= 1) FOTOĞRAF SEÇME ======================= -->
@@ -161,6 +160,8 @@
     <p class="hint" id="bigHint" hidden>{{t.bigHint}}</p>
     <p class="msg err" id="goMsg" role="status" hidden></p>
   </div>
+
+{{> note}}
 
 {{> more}}
 

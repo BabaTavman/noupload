@@ -49,6 +49,24 @@ try {
   check(`1 ${N} sayfanın title'ı da description'ı da birbirinden farklı`, [new Set(titles).size, new Set(descs).size], [N, N]);
   check(`1 kök adresteki sayfalar varsayılan dilde (${config.defaultLang}) — eski bağlantılar bozulmadı`, PAGES.map(p => new RegExp(`<html lang="${config.defaultLang}">`).test(fs.readFileSync(path.join(ROOT, p + ".html"), "utf8"))), PAGES.map(() => true));
 
+  {
+    // ortak stil dosyası: yazı tipleri dahil her url() yerel ve yerinde; Google Fonts'a (ya da başka bir yere) istek yok
+    const css = fs.readFileSync(path.join(ROOT, "assets/site.css"), "utf8");
+    const urls = all(css, /url\(\s*["']?([^"')]+)["']?\s*\)/g).map(m => m[0]);
+    check("1 assets/site.css · yazı tipi dosyaları yerel ve yerinde (4 dosya)", [urls.length, urls.filter(u => /^(https?:)?\/\//.test(u) || !fs.existsSync(path.join(ROOT, "assets", u)))], [4, []]);
+    const sources = ["assets/site.css", "assets/site.js", ...LANGS.flatMap(l => PAGES.map(p => outFile(l, p)))];
+    check("1 hiçbir sayfada ve ortak dosyada dış yazı tipi / CDN adresi geçmiyor", sources.filter(f => /fonts\.googleapis|fonts\.gstatic|@import|cdnjs|jsdelivr|unpkg/.test(fs.readFileSync(path.join(ROOT, f), "utf8"))), []);
+    // sayfaların satır içi <style> blokları: url() yalnızca data: ya da yerel olabilir (üstüne gelince / belli genişlikte doğan istek tarayıcı testinde görünmez)
+    const pages = LANGS.flatMap(l => PAGES.map(p => outFile(l, p)));
+    const styleOf = f => all(fs.readFileSync(path.join(ROOT, f), "utf8"), /<style[^>]*>([\s\S]*?)<\/style>/g).map(m => m[0]).join("\n");
+    check("1 sayfaların <style> bloklarında dış adrese url() yok", pages.flatMap(f => all(styleOf(f), /url\(\s*["']?([^"')]+)["']?\s*\)/g).map(m => m[0]).filter(u => /^(https?:)?\/\//.test(u)).map(u => f + ": " + u)), []);
+    // hareket: yalnızca ana sayfada "draw" (bir kez) ve "pulse" (sürekli); başka hiçbir yerde @keyframes ya da sonsuz animasyon yok (gizli öğelerinki tarayıcı testinde görünmez)
+    const motion = f => { const t = f.endsWith(".css") ? fs.readFileSync(path.join(ROOT, f), "utf8") : styleOf(f); return [all(t, /@keyframes\s+([\w-]+)/g).map(m => m[0]).sort().join(), (t.match(/\binfinite\b/g) || []).length].join(" / "); };
+    check("1 @keyframes ve sonsuz animasyon: yalnızca ana sayfada draw + pulse (tek infinite)", Object.fromEntries(["assets/site.css", ...pages].map(f => [f, motion(f)]).filter(([f, v]) => v !== (/(^|\/)index\.html$/.test(f) ? "draw,pulse / 1" : " / 0"))), {});
+    const faces = all(css, /@font-face\s*\{([^}]*)\}/g).map(m => m[0]);
+    check("1 her @font-face font-display: swap kullanıyor", [faces.length, faces.every(x => /font-display:\s*swap/.test(x))], [4, true]);
+  }
+
   /* ---------- 2. sitemap.xml + robots.txt ---------- */
   {
     const sm = fs.readFileSync(path.join(ROOT, "sitemap.xml"), "utf8");
@@ -69,7 +87,7 @@ try {
     let r = runBuild(T);
     check("3 yeniden üretmek hiçbir şeyi değiştirmiyor", [r.code, /hepsi güncel/.test(r.out), snap() === before], [0, true, true]);
 
-    const crlfFiles = ["src/pdf.html", "src/partials/head.html", `i18n/${config.defaultLang}.json`, "src/icons/pdf.svg"], keep = Object.fromEntries(crlfFiles.map(f => [f, get(f)]));
+    const crlfFiles = ["src/pdf.html", "src/partials/head.html", `i18n/${config.defaultLang}.json`, "src/partials/card.html"], keep = Object.fromEntries(crlfFiles.map(f => [f, get(f)]));
     for (const f of crlfFiles) put(f, "\uFEFF" + keep[f].replace(/\r?\n/g, "\r\n"));
     r = runBuild(T); check("3 kaynaklar CRLF ve BOM'lu olsa da çıktı bayt bayt aynı", [r.code, snap() === before], [0, true]);
     for (const f of crlfFiles) put(f, keep[f]);

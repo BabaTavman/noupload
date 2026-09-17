@@ -9,7 +9,6 @@
    Girdi
      src/*.html            sayfa şablonları (index, pdf, foto, foto-pdf)
      src/partials/*.html   şablonların ortak parçaları
-     src/icons/*.svg       araç kartlarının simgeleri
      i18n/*.json           her dil için bir dosya (dosya adı = dil kodu)
 
    Çıktı
@@ -36,7 +35,7 @@ const SITE = "https://babatavman.github.io/noupload/".replace(/\/*$/, "/");  // 
 const DEFAULT_LANG = "tr";                              // kök adreste yayınlanan dil (mevcut bağlantılar bozulmasın)
 const X_DEFAULT = "en";                                 // dili eşleşmeyen ziyaretçiye önerilen sürüm (hreflang="x-default")
 const PAGES = ["index", "pdf", "foto", "foto-pdf"];     // src/<ad>.html
-const TOOLS = ["pdf", "foto", "foto-pdf"];              // kartların sırası; her biri aynı adlı sayfa ve src/icons/<ad>.svg
+const TOOLS = ["pdf", "foto", "foto-pdf"];              // kartların sırası; her biri aynı adlı sayfa (kart rengi: assets/site.css, a.tool[data-tool])
 
 const ROOT = __dirname;
 const fail = msg => { console.error("HATA: " + msg); process.exit(1); };
@@ -143,14 +142,9 @@ function render(text, ctx, where, depth = 0) {
 /* ------------------------------ ÜRETİM ------------------------------ */
 { const lost = TOOLS.filter(t => !PAGES.includes(t)); if (lost.length) fail(`TOOLS içindeki "${lost.join(", ")}" PAGES listesinde yok`); }
 const outputs = new Map();     // göreli yol → içerik
-const icons = Object.fromEntries(TOOLS.map(t => [t, read("src", "icons", t + ".svg").trim()]));
 
 for (const code of langs) {
-  // "{toolCount}" gibi üretim zamanı değerleri bütün metinlerde yerine konur
-  const fill = v => typeof v === "string" ? v.replace(/\{toolCount\}/g, TOOLS.length)
-    : Array.isArray(v) ? v.map(fill)
-    : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fill(x)])) : v;
-  const D = fill(dict[code]);
+  const D = dict[code];
 
   for (const page of PAGES) {
     const ctx = { lang: code, common: D.common, page: D[page], vars: {} };
@@ -169,7 +163,7 @@ for (const code of langs) {
 
     const card = tool => render(partial("card"), { ...ctx, vars: {
       "tool.href": tool + ".html",
-      "tool.icon": icons[tool],
+      "tool.slug": tool,
       "tool.title": escapeHtml(D.common.tools[tool].title),
       "tool.desc": escapeHtml(D.common.tools[tool].desc)
     } }, "partials/card.html");
@@ -180,7 +174,6 @@ for (const code of langs) {
 
     ctx.vars = {
       lang: code,
-      langCount: langs.length,
       root: toRoot(code),                       // assets/ ve lib/ için: "" ya da "../"
       page,                                     // "pdf" → üst çubukta "/ pdf"
       canonical: absUrl(code, page),

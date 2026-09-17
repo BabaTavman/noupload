@@ -1,2 +1,3 @@
-# Kütüphane dosyaları bayt bayt korunsun (özetleri lib/README.md'de): Windows'ta satır sonu dönüştürülmesin
+# Kütüphane ve yazı tipi dosyaları bayt bayt korunsun: Windows'ta satır sonu dönüştürülmesin
 lib/*.js -text
+assets/fonts/*.woff2 binary
