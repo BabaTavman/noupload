@@ -24,6 +24,7 @@
     --rule:#D3DDE3;
     --accent:#17607F;
     --accent-ink:#FFFFFF;
+    --accent-soft:#DCE9F0;
     --good:#2A6B4F;
     --warn:#8C5A10;
     --radius:10px;
@@ -37,14 +38,14 @@
       color-scheme:dark;
       --ground:#101A21; --surface:#18242D; --ink:#E6EDF2; --ink-2:#AEC1CC;
       --ink-3:#7C929F; --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
-      --good:#67B089; --warn:#D9A458;
+      --accent-soft:#1B3441; --good:#67B089; --warn:#D9A458;
     }
   }
   :root[data-theme="dark"]{
     color-scheme:dark;
     --ground:#101A21; --surface:#18242D; --ink:#E6EDF2; --ink-2:#AEC1CC;
     --ink-3:#7C929F; --rule:#2A3B47; --accent:#5EA7C9; --accent-ink:#0B1319;
-    --good:#67B089; --warn:#D9A458;
+    --accent-soft:#1B3441; --good:#67B089; --warn:#D9A458;
   }
   :root[data-theme="light"]{color-scheme:light}
 
@@ -58,12 +59,18 @@
   .wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
 
   /* üst çubuk: ana sayfaya dönüş */
-  .bar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:6px}
+  .bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-bottom:6px}
+  .barlead{display:flex;align-items:center;gap:14px;min-width:0}
+  .back{font-size:.85rem;font-weight:600;color:var(--ink-2);text-decoration:none;white-space:nowrap}
+  .back:hover{color:var(--accent)}
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
   .brand .mark{width:28px;height:28px;border-radius:7px;background:var(--accent);display:grid;place-items:center;flex:none}
   .brand .mark svg{width:16px;height:16px}
+  /* Windows kontrast temalarında ikonun zemini ve çizgisi birlikte korunsun, çizgi kaybolmasın */
+  @media (forced-colors: active){.brand .mark{forced-color-adjust:none}}
   .brand span{font-size:1.02rem;font-weight:700;letter-spacing:-.02em}
   .brand small{font-family:var(--mono);font-size:.74rem;color:var(--ink-3);margin-left:6px}
+  @media (max-width:380px){.brand small{display:none}}
 
   header h1{font-size:1.55rem;margin:0 0 6px;letter-spacing:-.02em}
   header p{margin:0;color:var(--ink-2);font-size:.95rem}
@@ -97,7 +104,7 @@
     border:1px solid var(--rule); border-radius:7px;
     background:var(--ground); color:var(--ink); width:100%;
   }
-  input:focus-visible, select:focus-visible, button:focus-visible, #drop:focus-visible{
+  a:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible, #drop:focus-visible{
     outline:2px solid var(--accent); outline-offset:2px;
   }
   .hint{font-size:.78rem;color:var(--ink-3)}
@@ -110,6 +117,10 @@
   button:disabled{opacity:.45;cursor:not-allowed}
   button.ghost{background:transparent;color:var(--ink-2);border-color:var(--rule)}
   .langbtn{padding:6px 11px;font-size:.8rem;background:transparent;color:var(--ink-2);border:1px solid var(--rule);border-radius:6px}
+  .barbtns{display:flex;gap:8px;margin-left:auto}
+  /* tema düğmesinin genişliği yazıya göre değişmesin: yoksa dar ekranda üst çubuk
+     bir tek, bir iki satır olup her basışta sayfa zıplıyor */
+  #theme{min-width:5.5em}
 
   /* --- sonuç --- */
   .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -123,6 +134,25 @@
   .verdict.ok{color:var(--good)}
   .verdict.miss{color:var(--warn)}
   [hidden]{display:none !important}
+
+  /* diğer araçlar — kart stili index.html ile aynı */
+  .more{margin-top:28px}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:16px}
+  .section-head h2{margin:0;font-size:1.1rem;letter-spacing:-.02em}
+  .tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media (max-width:640px){.tools{grid-template-columns:1fr}}
+  a.tool{
+    display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+    background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);
+    padding:20px;text-decoration:none;color:inherit;transition:border-color .15s, transform .15s;
+  }
+  a.tool:hover{border-color:var(--accent);transform:translateY(-1px)}
+  a.tool .ico{width:44px;height:44px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center}
+  a.tool .ico svg{width:22px;height:22px;stroke:var(--accent)}
+  a.tool h3{margin:0 0 4px;font-size:1.05rem}
+  a.tool p{margin:0;font-size:.92rem;color:var(--ink-2)}
+  a.tool .go{display:block;margin-top:10px;font-family:var(--mono);font-size:.76rem;color:var(--accent)}
+  @media (prefers-reduced-motion: reduce){a.tool{transition:none}}
   footer{color:var(--ink-3);font-size:.82rem;text-align:center;margin-top:8px}
 </style>
 </head>
@@ -130,11 +160,16 @@
 <div class="wrap">
 
   <div class="bar">
-    <a class="brand" href="./">
-      <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
-      <span>NoUpload</span><small>/ foto</small>
-    </a>
-    <button class="langbtn" id="theme">Koyu</button>
+    <div class="barlead">
+      <a class="back" href="./" data-t="back">← Araçlar</a>
+      <a class="brand" href="./">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/></svg></span>
+        <span>NoUpload</span><small>/ foto</small>
+      </a>
+    </div>
+    <div class="barbtns">
+      <button class="langbtn" id="theme">Koyu</button>
+    </div>
   </div>
 
   <header>
@@ -190,6 +225,24 @@
     <p class="verdict" id="verdict" style="margin:14px 0"></p>
     <button id="download">İndir</button>
   </div>
+
+  <section class="more">
+    <div class="section-head">
+      <h2 data-t="moreH">Diğer araçlar</h2>
+    </div>
+    <div class="tools">
+      <a class="tool" href="pdf.html">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v14H8z"/><path d="M15 3v4h4"/><path d="M4 8v13h11"/><path d="M11 13h4M11 16h4"/></svg>
+        </span>
+        <div>
+          <h3 data-t="otherT">PDF Aracı</h3>
+          <p data-t="otherD">Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.</p>
+          <span class="go" data-t="otherGo">Aç →</span>
+        </div>
+      </a>
+    </div>
+  </section>
 
   <footer>Tek dosyalık araç · sunucu yok · veri toplanmıyor</footer>
 </div>
@@ -348,17 +401,32 @@ el("reset").addEventListener("click", () => {
 });
 
 /* =================================================================
-   TEMA — üç durum: sistem (kayıt yok) / açık / koyu.
-   Düğme tıklayınca ne olacağını yazar.
-   Sıra: sistem → sistemin tersi → sistemle aynı → sistem.
-   Bu sayfada henüz dil düğmesi yok; metinler diğer sayfalardaki gibi
-   iki dilde duruyor, sayfanın dili (<html lang>) hangisiyse o kullanılıyor.
+   METİNLER + TEMA
+   Bu sayfada henüz dil düğmesi yok; üst çubuk, tema düğmesi ve
+   "Diğer araçlar" metinleri diğer sayfalardaki gibi iki dilde duruyor,
+   sayfanın dili (<html lang>) hangisiyse o kullanılıyor.
 ================================================================== */
 const STR = {
-  tr:{themeDark:"Koyu", themeLight:"Açık", themeSystem:"Sistem"},
-  en:{themeDark:"Dark", themeLight:"Light", themeSystem:"System"}
+  tr:{
+    themeDark:"Koyu", themeLight:"Açık", themeSystem:"Sistem",
+    back:"← Araçlar", moreH:"Diğer araçlar",
+    otherT:"PDF Aracı", otherD:"Dosyaları birleştir, istediğin sayfaları seçip yeni PDF çıkar, sayfaları döndür.", otherGo:"Aç →"
+  },
+  en:{
+    themeDark:"Dark", themeLight:"Light", themeSystem:"System",
+    back:"← Tools", moreH:"Other tools",
+    otherT:"PDF Tool", otherD:"Merge files, pick the pages you want as a new PDF, rotate pages.", otherGo:"Open →"
+  }
 };
 const T = () => STR[document.documentElement.lang] || STR.tr;
+document.querySelectorAll("[data-t]").forEach(n => {
+  const v = T()[n.dataset.t];
+  if (typeof v === "string") n.textContent = v;
+});
+
+/* Tema — üç durum: sistem (kayıt yok) / açık / koyu.
+   Düğme tıklayınca ne olacağını yazar.
+   Sıra: sistem → sistemin tersi → sistemle aynı → sistem. */
 const darkMQ = matchMedia("(prefers-color-scheme: dark)");
 const THEME_LABEL = {dark:"themeDark", light:"themeLight", system:"themeSystem"};
 const currentTheme = () => document.documentElement.getAttribute("data-theme") || "system";

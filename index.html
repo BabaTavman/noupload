@@ -68,6 +68,8 @@
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
   .brand .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center;flex:none}
   .brand .mark svg{width:18px;height:18px}
+  /* Windows kontrast temalarında ikonun zemini ve çizgisi birlikte korunsun, çizgi kaybolmasın */
+  @media (forced-colors: active){.brand .mark{forced-color-adjust:none}}
   .brand span{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
   .langbtn{padding:7px 12px;font:inherit;font-size:.82rem;font-weight:600;background:var(--surface);color:var(--ink-2);border:1px solid var(--rule);border-radius:8px;cursor:pointer}
   .langbtn:hover{border-color:var(--accent)}
@@ -126,7 +128,7 @@
   <div class="bar">
     <a class="brand" href="./">
       <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
           <path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9 14h6"/>
         </svg>
       </span>
