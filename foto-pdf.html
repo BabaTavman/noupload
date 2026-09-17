@@ -253,6 +253,7 @@
       <span class="spacer"></span>
       <a class="btn big" id="dl" href="#" download="ders-notlari.pdf" aria-describedby="resStat" data-t="download">İndir</a>
     </div>
+    <p class="hint" id="bigHint" data-t="bigHint" hidden>E-postayla göndereceksen Küçük dosya ayarını dene.</p>
     <p class="msg err" id="goMsg" role="status" hidden></p>
   </div>
 
@@ -323,6 +324,7 @@ const STR = {
     nPhotos:n=>`${n} fotoğraf`,
     reading:(d,t)=>`Fotoğraflar okunuyor… ${d} / ${t}`,
     skipped:(n,names)=>`${n} dosya açılamadı ve atlandı: ${names}`,
+    bigHint:"E-postayla göndereceksen Küçük dosya ayarını dene.",
     failed:(n,names)=>`${n} fotoğraf PDF'e eklenemedi: ${names}`,
     qualHint:(edge,q)=>`En uzun kenar ${edge} px · JPEG %${q}`,
     done:(p,size)=>`${p} sayfa · ${size}`
@@ -356,6 +358,7 @@ const STR = {
     nPhotos:n=>`${n} photo${n===1?"":"s"}`,
     reading:(d,t)=>`Reading photos… ${d} / ${t}`,
     skipped:(n,names)=>`${n} file${n===1?"":"s"} couldn't be opened and ${n===1?"was":"were"} skipped: ${names}`,
+    bigHint:"If you're going to email it, try the Small file setting.",
     failed:(n,names)=>`${n} photo${n===1?"":"s"} couldn't be added to the PDF: ${names}`,
     qualHint:(edge,q)=>`Longest edge ${edge} px · JPEG ${q}%`,
     done:(p,size)=>`${p} page${p===1?"":"s"} · ${size}`
@@ -400,6 +403,16 @@ function setTheme(t){
 function paintThemeBtn(){ el("theme").textContent = T()[THEME_LABEL[nextTheme(currentTheme())]]; }
 el("theme").addEventListener("click", () => setTheme(nextTheme(currentTheme())));
 darkMQ.addEventListener("change", paintThemeBtn);
+// "Geri" ile sayfa tarayıcının önbelleğinden gelirse betikler yeniden çalışmaz:
+// başka sayfada değiştirilmiş olabilecek kayıtlı temayı burada yeniden uygula.
+addEventListener("pageshow", e => {
+  if (!e.persisted) return;
+  let t = null;
+  try { t = localStorage.getItem("noupload-theme"); } catch(err){}
+  if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  else document.documentElement.removeAttribute("data-theme");
+  paintThemeBtn();
+});
 
 /* ==================================================================
    1) AYARLAR VE DURUM
@@ -412,6 +425,7 @@ const QUALITY = {                  // en uzun kenar (px) ve JPEG kalitesi
   balanced:{ edge:1800, q:.8 },
   high:    { edge:2600, q:.9 }
 };
+const BIG_PDF = 10 * 1048576;       // bundan büyük PDF'te e-posta için "Küçük dosya" önerilir
 const THUMB = 320;                 // küçük resmin en uzun kenarı (px)
 
 let items = [];                    // sıralı liste: { file, url (küçük resim), turns (90°'lik dönüş sayısı), node (<li>) }
@@ -801,6 +815,7 @@ function paint(){
     el("dl").href = pdfUrl;
     el("dl").download = T().fileName;
   }
+  el("bigHint").hidden = !(state === "done" && result.size > BIG_PDF);
   const failed = result ? result.failed : [];
   const text = goError ? T()[goError] : failed.length ? T().failed(failed.length, nameList(failed)) : "";
   el("goMsg").hidden = !text;

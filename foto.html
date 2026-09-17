@@ -456,6 +456,16 @@ function setTheme(t){
 function paintThemeBtn(){ el("theme").textContent = T()[THEME_LABEL[nextTheme(currentTheme())]]; }
 el("theme").addEventListener("click", () => setTheme(nextTheme(currentTheme())));
 darkMQ.addEventListener("change", paintThemeBtn);
+// "Geri" ile sayfa tarayıcının önbelleğinden gelirse betikler yeniden çalışmaz:
+// başka sayfada değiştirilmiş olabilecek kayıtlı temayı burada yeniden uygula.
+addEventListener("pageshow", e => {
+  if (!e.persisted) return;
+  let t = null;
+  try { t = localStorage.getItem("noupload-theme"); } catch(err){}
+  if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  else document.documentElement.removeAttribute("data-theme");
+  paintThemeBtn();
+});
 paintThemeBtn();
 </script>
 </body>
